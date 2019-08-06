@@ -15,6 +15,9 @@ import com.dosse.upnp.UPnP;
  *
  */
 public class NodeChan {
+  /** The port the application will use to connect. **/
+  public static final int PORT = 13370;
+
   /** The IP address of this NodeChan node. **/
   private static String node_ip;
 
@@ -38,9 +41,21 @@ public class NodeChan {
     System.out.println("Your Node IP is " + node_ip + "\n");
 
     if (UPnP.isUPnPAvailable()) {
-      
+      if (!UPnP.isMappedUDP(PORT)) {
+        if (UPnP.openPortUDP(PORT)) {
+          // UPnP port mapping successful
+          System.out.println("UPnP port mapping enabled.\n");
+        } else {
+          System.out.println("UPnP port mapping failed. You will need to " +
+                             "manually forward port " + PORT + " to your " +
+                             "local IP.\n");
+        }
+      } else {
+        System.out.println("Port " + PORT + " already mapped, continuing.\n");
+      }
     } else {
-      System.err.println("UPnP not available. You will need to port forward.\n");
+      System.out.println("UPnP not available. You will need to manually " +
+                         "forward port " + PORT + " to your local IP.\n");
     }
 
     System.out.println("Enter peer IP to connect directly,\nleave blank to" +
