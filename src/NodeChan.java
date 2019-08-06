@@ -8,13 +8,13 @@ import java.net.InetAddress;
 
 /**
  *
- * NodeChan is a peer-to-peer distributed anonymous messageboard.
+ * NodeChan is a peer-to-peer distributed anonymous messageboard client.
  * For more information, see README.MD.
  *
  */
 public class NodeChan {
   /** The IP address of this NodeChan node. **/
-  private static String this_ip;
+  private static String node_ip;
 
   /** The IP address of the first peer to connect to. **/
   private static String first_peer_ip;
@@ -27,41 +27,38 @@ public class NodeChan {
       BufferedReader sc = new BufferedReader(new InputStreamReader(
         whatis.openStream()));
 
-      this_ip = sc.readLine().trim();
+      node_ip = sc.readLine().trim();
     } catch (Exception e) {
       System.err.println("Failed to retrieve this node's IP, quitting.");
       return;
     }
 
-    System.out.println("Enter peer IP to connect directly, or leave blank to" +
+    System.out.println("Your Node IP is " + node_ip + "\n");
+
+    System.out.println("Enter peer IP to connect directly,\nleave blank to" +
                        " connect via the peer tracker: ");
 
     Scanner scan = new Scanner(System.in);
     String input = scan.nextLine();
 
     if (input.equals("")) {
-      // the user has opted to retrieve a peer from the database
-      first_peer_ip = retrieve_peer(this_ip);
-
-      System.out.println(first_peer_ip);
-    } else if (input.equals("debug")) {
-      // special debug peer
-      first_peer_ip = "debug";
+      // retrieve a peer from the peer tracker
+      first_peer_ip = retrieve_peer(node_ip);
     } else {
-      // attempt to connect directly to the peer
+      // try to connect directly to the user-specified peer
       first_peer_ip = input;
     }
   }
 
   /**
-   * Retrieve a peer from the peer database.
+   * Retrieve a peer from the peer tracker.
    *
    * @param me - the IP address of the local node
    */
   public static String retrieve_peer(String me) {
     try {
-      URL peer_db = new URL("http://nodechan.000webhostapp.com/nodes/naccess" +
-                            ".php?ip=" + this_ip);
+      URL peer_db = new URL("http://nodechan.000webhostapp.com/nodes/peer" +
+                            ".php?ip=" + me);
 
       BufferedReader sc = new BufferedReader(new InputStreamReader(
         peer_db.openStream()));
