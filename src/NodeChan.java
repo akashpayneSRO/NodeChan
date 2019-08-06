@@ -19,7 +19,7 @@ import com.dosse.upnp.UPnP;
  */
 public class NodeChan {
   /** The port the application will use to connect. **/
-  public static final int PORT = 13370;
+  public static int PORT = 13370;
 
   /** The IP address of this NodeChan node. **/
   private static String node_ip;
@@ -28,6 +28,8 @@ public class NodeChan {
   private static String first_peer_ip;
 
   public static void main(String[] args) {
+    System.out.println("Welcome to NodeChan.");
+
     // get the local ip address
     try {
       URL whatis = new URL("http://bot.whatismyipaddress.com");
@@ -42,6 +44,8 @@ public class NodeChan {
     }
 
     System.out.println("Your Node IP is " + node_ip + "\n");
+
+    System.out.println("Attempting to enable UPnP port mapping...");
 
     if (UPnP.isUPnPAvailable()) {
       if (!UPnP.isMappedUDP(PORT)) {
