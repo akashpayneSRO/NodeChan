@@ -24,11 +24,15 @@ public class ChanPost {
   /** The text of the post **/
   private String text;
 
+  /** The number of times this node has received this post **/
+  private int receiptCount;
+
   public ChanPost(String tid, boolean isRoot, String title, String text) {
     this.tid = tid;
     this.isRoot = isRoot;
     this.title = title;
     this.text = text;
+    this.receiptCount = 0;
 
     this.postTime = System.currentTimeMillis();
 
@@ -44,6 +48,15 @@ public class ChanPost {
     this.pid = new String(pid_bytes);
   }
 
+  /**
+   * When we receive this message, increment the receipt count.
+   * The point of this is to avoid over-propagation of messages. Each client
+   * will limit the number of times they forward a single post, unless they
+   * are specifically requested to by another client.
+   */
+  public void heard() {
+    this.receiptCount++;
+  }
 
   /*
    * getters
@@ -70,5 +83,9 @@ public class ChanPost {
 
   public long getPostTime() {
     return this.postTime;
+  }
+
+  public int getReceiptCount() {
+    return this.receiptCount;
   }
 }
