@@ -1,4 +1,5 @@
 import java.util.Scanner;
+import java.util.ArrayList;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -49,7 +50,7 @@ public class NodeChan {
           System.out.println("UPnP port mapping enabled.\n");
         } else {
           // UPnP port mapping failed
-          System.out.println("UPnP port mapping failed. You will need to " +
+          System.out.println("UPnP port mapping failed. You may need to " +
                              "manually forward port " + PORT + " to your " +
                              "local IP.\n");
         }
@@ -60,7 +61,7 @@ public class NodeChan {
       // client does not have UPnP
       // the user is either not behind a NAT or they will need to manually
       // configure port forwarding on their router
-      System.out.println("UPnP not available. You will need to manually " +
+      System.out.println("UPnP not available. You may need to manually " +
                          "forward port " + PORT + " to your local IP.\n");
     }
 
