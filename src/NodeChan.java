@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.InetAddress;
 
+import com.dosse.upnp;
+
 /**
  *
  * NodeChan is a peer-to-peer distributed anonymous messageboard client.
