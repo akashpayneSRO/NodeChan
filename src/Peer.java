@@ -1,6 +1,12 @@
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+/**
+ *
+ * This class represents a single peer to which the client may send and receive
+ * posts and other data.
+ *
+ */
 public class Peer {
   /** This peer's address information **/
   private InetAddress addr;
