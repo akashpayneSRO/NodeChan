@@ -6,7 +6,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.InetAddress;
 
-import com.dosse.upnp;
+import com.dosse.upnp.UPnP;
 
 /**
  *
@@ -36,6 +36,12 @@ public class NodeChan {
     }
 
     System.out.println("Your Node IP is " + node_ip + "\n");
+
+    if (UPnP.isUPnPAvailable()) {
+      
+    } else {
+      System.err.println("UPnP not available. You will need to port forward.\n");
+    }
 
     System.out.println("Enter peer IP to connect directly,\nleave blank to" +
                        " connect via the peer tracker: ");
