@@ -5,6 +5,8 @@ import java.io.InputStreamReader;
 
 import java.net.URL;
 import java.net.InetAddress;
+import java.net.DatagramSocket;
+import java.net.DatagramPacket;
 
 import com.dosse.upnp.UPnP;
 
@@ -46,6 +48,7 @@ public class NodeChan {
           // UPnP port mapping successful
           System.out.println("UPnP port mapping enabled.\n");
         } else {
+          // UPnP port mapping failed
           System.out.println("UPnP port mapping failed. You will need to " +
                              "manually forward port " + PORT + " to your " +
                              "local IP.\n");
@@ -54,6 +57,9 @@ public class NodeChan {
         System.out.println("Port " + PORT + " already mapped, continuing.\n");
       }
     } else {
+      // client does not have UPnP
+      // the user is either not behind a NAT or they will need to manually
+      // configure port forwarding on their router
       System.out.println("UPnP not available. You will need to manually " +
                          "forward port " + PORT + " to your local IP.\n");
     }
@@ -70,6 +76,11 @@ public class NodeChan {
     } else {
       // try to connect directly to the user-specified peer
       first_peer_ip = input;
+    }
+
+    if (first_peer_ip.equals("nopeer")) {
+      System.out.println("No peer available from tracker. Waiting for " +
+                         "connections...\n");
     }
   }
 
