@@ -1,4 +1,5 @@
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 public class Peer {
   /** This peer's address information **/
@@ -7,16 +8,26 @@ public class Peer {
   /** The time this peer was last heard **/
   private long lastHeard;
 
-  public Peer(String ip, long time) {
-    this.addr = InetAddress.getByName(ip);
-    this.time = System.currentTimeMillis();
+  /** Whether or not we have resolved this peer's address **/
+  private boolean resolved;
+
+  public Peer(String ip) {
+    this.lastHeard = System.currentTimeMillis();
+
+    try {
+      this.addr = InetAddress.getByName(ip);
+
+      this.resolved = true;
+    } catch (UnknownHostException e) {
+      this.resolved = false;
+    }
   }
 
   /**
    * We just heard from this peer, update their time
    */
   public void heard() {
-    this.time = System.currentTimeMillis();
+    this.lastHeard = System.currentTimeMillis();
   }
 
   /*
@@ -28,5 +39,9 @@ public class Peer {
 
   public long getLastHeard() {
     return this.lastHeard;
+  }
+
+  public boolean isResolved() {
+    return this.resolved;
   }
 }

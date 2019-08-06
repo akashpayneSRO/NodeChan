@@ -19,7 +19,14 @@ import com.dosse.upnp.UPnP;
  */
 public class NodeChan {
   /** The port the application will use to connect. **/
-  public static int PORT = 13370;
+  public static final int PORT = 13370;
+
+  /** Max time to keep a peer alive without hearing from it (seconds) **/
+  public static final int PEER_TIMEOUT = 300;
+
+
+
+
 
   /** The IP address of this NodeChan node. **/
   private static String node_ip;
@@ -27,8 +34,13 @@ public class NodeChan {
   /** The IP address of the first peer to connect to. **/
   private static String first_peer_ip;
 
+  /** List of this node's peers **/
+  private static ArrayList<Peer> peers;
+
   public static void main(String[] args) {
     System.out.println("Welcome to NodeChan.");
+
+    peers = new ArrayList<Peer>();
 
     // get the local ip address
     try {
@@ -83,9 +95,18 @@ public class NodeChan {
       first_peer_ip = input;
     }
 
+    System.out.println("");
+
     if (first_peer_ip.equals("nopeer")) {
       System.out.println("No peer available from tracker. Waiting for " +
                          "connections...\n");
+    } else {
+      Peer firstPeer = new Peer(first_peer_ip);
+
+      // verify that the peer has a valid address, then add it to the peer list
+      if (firstPeer.isResolved()) {
+        peers.add(firstPeer);
+      }
     }
   }
 
@@ -106,6 +127,19 @@ public class NodeChan {
     } catch(Exception e) {
       System.err.println("Failed to connect to peer tracker, quitting.");
       return "ptfail";
+    }
+  }
+
+  /**
+   * Check the list of peers and remove all that have timed out.
+   */
+  public static void checkPeers() {
+    for (int i = 0; i < peers.size(); i++) {
+      if (System.currentTimeMillis() - peers.get(i).getLastHeard() > 
+          (PEER_TIMEOUT * 1000)) {
+        peers.remove(i);
+        i--;
+      }
     }
   }
 }
