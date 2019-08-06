@@ -28,8 +28,8 @@ public class ChanThread {
     Random rand = new Random();
 
     for (int i = 0; i < 8; i++) {
-      // generate a random ASCII character from 33 to 126
-      tid_bytes[i] = (byte)(rand.nextInt(93) + 33);
+      // generate a random ASCII character from 48 to 122
+      tid_bytes[i] = (byte)(rand.nextInt(74) + 48);
     }
 
     this.tid = new String(tid_bytes);

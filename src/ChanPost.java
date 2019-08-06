@@ -27,7 +27,7 @@ public class ChanPost {
   /** The number of times this node has received this post **/
   private int receiptCount;
 
-  public ChanPost(String tid, boolean isRoot, String title, String text) {
+  public ChanPost(String tid, String pid, boolean isRoot, String title, String text) {
     this.tid = tid;
     this.isRoot = isRoot;
     this.title = title;
@@ -36,16 +36,21 @@ public class ChanPost {
 
     this.postTime = System.currentTimeMillis();
 
-    // generate random 8-character post ID
-    byte[] pid_bytes = new byte[8];
-    Random rand = new Random();
+    // only generate a new post ID if this is a new post, not a received one
+    if (pid.equals("")) {
+      // generate random 8-character post ID
+      byte[] pid_bytes = new byte[8];
+      Random rand = new Random();
 
-    for (int i = 0; i < 8; i++) {
-      // generate a random ASCII character from 33 to 126
-      pid_bytes[i] = (byte)(rand.nextInt(93) + 33);
+      for (int i = 0; i < 8; i++) {
+        // generate a random ASCII character from 48 to 122
+        pid_bytes[i] = (byte)(rand.nextInt(74) + 48);
+      }
+
+      this.pid = new String(pid_bytes);
+    } else {
+      this.pid = pid;
     }
-
-    this.pid = new String(pid_bytes);
   }
 
   /**
@@ -56,6 +61,89 @@ public class ChanPost {
    */
   public void heard() {
     this.receiptCount++;
+  }
+
+  /**
+   * Convert a ChanPost into a byte array for transmission over UDP. See
+   * format.txt for information about packet formatting.
+   */
+  public static byte[] encodeUDP(ChanPost out) {
+    byte[] result = new byte[326];
+
+    String outTid = out.getTid();
+    String outPid = out.getPid();
+    String outTitle = out.getTitle();
+    String outText = out.getText();
+
+    // NodeChan header
+    result[0] = 'N';
+    result[1] = 'C';
+
+    // message type (P = post)
+    result[2] = 'P';
+
+    // flags
+    result[3] = out.getIsRoot() ? (byte)1 : (byte)0;
+
+    // thread ID
+    for (int i = 0; i < 8; i++) {
+      result[i + 4] = (byte)outTid.charAt(i);
+    }
+
+    // post ID
+    for (int i = 0; i < 8; i++) {
+      result[i + 12] = (byte)outPid.charAt(i);
+    }
+
+    // title
+    for (int i = 0; i < 50; i++) {
+      if (i < outTitle.length()) {
+        result[20 + i] = (byte)outTitle.charAt(i);
+      } else {
+        result[20 + i] = (byte)0;
+      }
+    }
+
+    // post text
+    for (int i = 0; i < 256; i++) {
+      if (i < outText.length()) {
+        result[70 + i] = (byte)outText.charAt(i);
+      } else {
+        result[70 + i] = (byte)0;
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Convert a byte array received via UDP back into a ChanPost.
+   * See format.txt for formatting details.
+   */
+  public static ChanPost decodeUDP(byte[] in) {
+    // check header
+    if (in[0] != 'N' || in[1] != 'C') return null;
+
+    // verify that this message is a post
+    if (in[2] != 'P') return null;
+
+    // we should be good to go
+    boolean newRoot = (in[3] == 1);
+
+    String newTid   = new String(in, 4, 8);
+    String newPid   = new String(in, 12, 8);
+    String newTitle = new String(in, 20, 50);
+    String newText  = new String(in, 70, 256);
+
+    ChanPost result = new ChanPost(
+        newTid,
+        newPid,
+        newRoot,
+        newTitle,
+        newText
+    );
+
+    return result;
   }
 
   /*
