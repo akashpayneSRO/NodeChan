@@ -1,0 +1,24 @@
+This document describes the formatting of data packets sent over UDP on the NodeChan network.
+
+
+
+Header bytes:
+
+BYTE 0 - 'N'
+BYTE 1 - 'C'
+
+BYTE 2 - type
+ -'P' --> post
+
+BYTE 3 - flags
+
+
+
+Layout of a post ('P') packet:
+BYTE 4-11 - thread ID
+
+BYTE 12-19 - post ID
+
+BYTE 20-69 - title of the thread the post belongs to
+
+BYTE 70-325 - post text
