@@ -41,13 +41,35 @@ public class NodeChan {
 
     if (input.equals("")) {
       // the user has opted to retrieve a peer from the database
+      first_peer_ip = retrieve_peer(this_ip);
 
+      System.out.println(first_peer_ip);
     } else if (input.equals("debug")) {
       // special debug peer
       first_peer_ip = "debug";
     } else {
       // attempt to connect directly to the peer
       first_peer_ip = input;
+    }
+  }
+
+  /**
+   * Retrieve a peer from the peer database.
+   *
+   * @param me - the IP address of the local node
+   */
+  public static String retrieve_peer(String me) {
+    try {
+      URL peer_db = new URL("http://nodechan.000webhostapp.com/nodes/naccess" +
+                            ".php?ip=" + this_ip);
+
+      BufferedReader sc = new BufferedReader(new InputStreamReader(
+        peer_db.openStream()));
+
+      return sc.readLine().trim();
+    } catch(Exception e) {
+      System.err.println("Failed to connect to peer tracker, quitting.");
+      return "ptfail";
     }
   }
 }
