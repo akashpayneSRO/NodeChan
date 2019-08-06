@@ -8,6 +8,7 @@ import java.net.URL;
 import java.net.InetAddress;
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
+import java.net.SocketException;
 
 import com.dosse.upnp.UPnP;
 
@@ -19,7 +20,7 @@ import com.dosse.upnp.UPnP;
  */
 public class NodeChan {
   /** The port the application will use to connect. **/
-  public static final int PORT = 13370;
+  public static final int NC_PORT = 13370;
 
   /** Max time to keep a peer alive without hearing from it (seconds) **/
   public static final int PEER_TIMEOUT = 300;
@@ -29,10 +30,13 @@ public class NodeChan {
 
 
   /** The IP address of this NodeChan node. **/
-  private static String node_ip;
+  private static InetAddress node_ip;
 
   /** The IP address of the first peer to connect to. **/
   private static String first_peer_ip;
+
+  /** UDP socket to send packets to peers with **/
+  private static DatagramSocket nc_socket;
 
   /** List of this node's peers **/
   private static ArrayList<Peer> peers;
@@ -49,36 +53,44 @@ public class NodeChan {
       BufferedReader sc = new BufferedReader(new InputStreamReader(
         whatis.openStream()));
 
-      node_ip = sc.readLine().trim();
+      node_ip = InetAddress.getByName(sc.readLine().trim());
     } catch (Exception e) {
       System.err.println("Failed to retrieve this node's IP, quitting.");
       return;
     }
 
-    System.out.println("Your Node IP is " + node_ip + "\n");
+    System.out.println("Your Node IP is " + node_ip.getHostAddress() + "\n");
 
     System.out.println("Attempting to enable UPnP port mapping...");
 
     if (UPnP.isUPnPAvailable()) {
-      if (!UPnP.isMappedUDP(PORT)) {
-        if (UPnP.openPortUDP(PORT)) {
+      if (!UPnP.isMappedUDP(NC_PORT)) {
+        if (UPnP.openPortUDP(NC_PORT)) {
           // UPnP port mapping successful
           System.out.println("UPnP port mapping enabled.\n");
         } else {
           // UPnP port mapping failed
           System.out.println("UPnP port mapping failed. You may need to " +
-                             "manually forward port " + PORT + " to your " +
+                             "manually forward port " + NC_PORT + " to your " +
                              "local IP.\n");
         }
       } else {
-        System.out.println("Port " + PORT + " already mapped, continuing.\n");
+        System.out.println("Port " + NC_PORT + " already mapped, continuing.\n");
       }
     } else {
       // client does not have UPnP
       // the user is either not behind a NAT or they will need to manually
       // configure port forwarding on their router
       System.out.println("UPnP not available. You may need to manually " +
-                         "forward port " + PORT + " to your local IP.\n");
+                         "forward port " + NC_PORT + " to your local IP.\n");
+    }
+
+    // setup UDP socket
+    try {
+      nc_socket = new DatagramSocket(NC_PORT);
+    } catch (SocketException e) {
+      System.err.println("Failed to establish UDP socket, quitting.");
+      return;
     }
 
     System.out.println("Enter peer IP to connect directly,\nleave blank to" +
@@ -89,7 +101,7 @@ public class NodeChan {
 
     if (input.equals("")) {
       // retrieve a peer from the peer tracker
-      first_peer_ip = retrieve_peer(node_ip);
+      first_peer_ip = retrieve_peer(node_ip.getHostAddress());
     } else {
       // try to connect directly to the user-specified peer
       first_peer_ip = input;
