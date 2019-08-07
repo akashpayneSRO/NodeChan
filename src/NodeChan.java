@@ -278,6 +278,7 @@ public class NodeChan {
     ChanPost newPost = new ChanPost(
                              newThread.getTid(),
                              "",
+                             node_ip,
                              true,
                              title,
                              text
@@ -304,6 +305,7 @@ public class NodeChan {
     ChanPost newPost = new ChanPost(
                              thread.getTid(),
                              "",
+                             node_ip,
                              false,
                              thread.getTitle(),
                              reply

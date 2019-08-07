@@ -12,13 +12,15 @@ BYTE 2 - type
 
 BYTE 3 - flags
 
+BYTES 4-7 - sender IP
+
 
 
 Layout of a post ('P') packet:
-BYTE 4-11 - thread ID
+BYTE 8-15 - thread ID
 
-BYTE 12-19 - post ID
+BYTE 16-23 - post ID
 
-BYTE 20-69 - title of the thread the post belongs to
+BYTE 24-73 - title of the thread the post belongs to
 
-BYTE 70-325 - post text
+BYTE 74-329 - post text

@@ -1,5 +1,8 @@
 import java.util.Random;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 /**
  *
  * This class represents a single post in a NodeChan thread.
@@ -27,12 +30,16 @@ public class ChanPost {
   /** The number of times this node has received this post **/
   private int receiptCount;
 
-  public ChanPost(String tid, String pid, boolean isRoot, String title, String text) {
+  /** The IP address that this post was sent from **/
+  private InetAddress sender_addr;
+
+  public ChanPost(String tid, String pid, InetAddress sender_addr, boolean isRoot, String title, String text) {
     this.tid = tid;
     this.isRoot = isRoot;
     this.title = title;
     this.text = text;
     this.receiptCount = 0;
+    this.sender_addr = sender_addr;
 
     this.postTime = System.currentTimeMillis();
 
@@ -43,8 +50,7 @@ public class ChanPost {
       Random rand = new Random();
 
       for (int i = 0; i < 8; i++) {
-        // generate a random ASCII character from 48 to 122
-        pid_bytes[i] = (byte)(rand.nextInt(74) + 48);
+        pid_bytes[i] = (byte)(rand.nextInt(42) + 48);
       }
 
       this.pid = new String(pid_bytes);
@@ -68,10 +74,11 @@ public class ChanPost {
    * format.txt for information about packet formatting.
    */
   public static byte[] encodeUDP(ChanPost out) {
-    byte[] result = new byte[326];
+    byte[] result = new byte[330];
 
     String outTid = out.getTid();
     String outPid = out.getPid();
+    byte[] out_addr = out.getSender_addr().getAddress();
     String outTitle = out.getTitle();
     String outText = out.getText();
 
@@ -85,31 +92,36 @@ public class ChanPost {
     // flags
     result[3] = out.getIsRoot() ? (byte)1 : (byte)0;
 
+    // copy IP
+    for (int i = 0; i < 4; i++) {
+      result[i + 4] = out_addr[i];
+    }
+
     // thread ID
     for (int i = 0; i < 8; i++) {
-      result[i + 4] = (byte)outTid.charAt(i);
+      result[i + 8] = (byte)outTid.charAt(i);
     }
 
     // post ID
     for (int i = 0; i < 8; i++) {
-      result[i + 12] = (byte)outPid.charAt(i);
+      result[i + 16] = (byte)outPid.charAt(i);
     }
 
     // title
     for (int i = 0; i < 50; i++) {
       if (i < outTitle.length()) {
-        result[20 + i] = (byte)outTitle.charAt(i);
+        result[24 + i] = (byte)outTitle.charAt(i);
       } else {
-        result[20 + i] = (byte)0;
+        result[24 + i] = (byte)0;
       }
     }
 
     // post text
     for (int i = 0; i < 256; i++) {
       if (i < outText.length()) {
-        result[70 + i] = (byte)outText.charAt(i);
+        result[74 + i] = (byte)outText.charAt(i);
       } else {
-        result[70 + i] = (byte)0;
+        result[74 + i] = (byte)0;
       }
     }
 
@@ -130,14 +142,31 @@ public class ChanPost {
     // we should be good to go
     boolean newRoot = (in[3] == 1);
 
-    String newTid   = new String(in, 4, 8);
-    String newPid   = new String(in, 12, 8);
-    String newTitle = new String(in, 20, 50);
-    String newText  = new String(in, 70, 256);
+    // get IP bytes
+    byte[] newBytes = new byte[4];
+
+    for (int i = 0; i < 4; i++) {
+      newBytes[i] = in[i + 4];
+    }
+
+    String newTid   = new String(in, 8, 8);
+    String newPid   = new String(in, 16, 8);
+    String newTitle = new String(in, 24, 50);
+    String newText  = new String(in, 74, 256);
+    InetAddress newAddr = null;
+
+    try {
+      newAddr = InetAddress.getByAddress(newBytes);
+    } catch (UnknownHostException e) {
+      // again, not too worried about individual packets
+      // this also prevents some of the weird IP spoofing tomfoolery, I think
+      return null;
+    }
 
     ChanPost result = new ChanPost(
         newTid,
         newPid,
+        newAddr,
         newRoot,
         newTitle,
         newText
@@ -155,6 +184,10 @@ public class ChanPost {
 
   public String getPid() {
     return this.pid;
+  }
+
+  public InetAddress getSender_addr() {
+    return this.sender_addr;
   }
 
   public boolean getIsRoot() {
