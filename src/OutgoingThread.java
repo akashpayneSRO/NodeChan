@@ -33,7 +33,7 @@ public class OutgoingThread extends Thread {
     try {
       sock.send(outPacket);
     } catch (IOException e) {
-      // do nothing, we don't care too heavily about every individual packet
+      System.err.println(e.getLocalizedMessage());
     }
   }
 }

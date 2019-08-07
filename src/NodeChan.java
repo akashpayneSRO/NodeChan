@@ -38,8 +38,14 @@ public class NodeChan {
   /** UDP socket to send packets to peers with **/
   private static DatagramSocket nc_socket;
 
+  /** Incoming packet-handling thread **/
+  private static IncomingThread nc_incoming;
+
   /** List of this node's peers **/
   private static ArrayList<Peer> peers;
+
+  /** Local list of ChanThreads this user has received **/
+  private static ArrayList<ChanThread> threads;
 
   public static void main(String[] args) {
     System.out.println("Welcome to NodeChan.");
@@ -92,6 +98,10 @@ public class NodeChan {
       System.err.println("Failed to establish UDP socket, quitting.");
       return;
     }
+
+    // initialize incoming packet-handling thread
+    nc_incoming = new IncomingThread(nc_socket, threads, peers);
+    nc_incoming.start();
 
     System.out.println("Enter peer IP to connect directly,\nleave blank to" +
                        " connect via the peer tracker: ");
