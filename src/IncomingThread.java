@@ -43,11 +43,61 @@ public class IncomingThread extends Thread {
 
       switch(recv_data[2]) {
         case 'P':
+          // TODO: post propagation/forwarding
           // decode the post packet
           ChanPost post = ChanPost.decodeUDP(recv_data);
+          System.out.println("Incoming post!");
           
-          // TODO: actually handle posts
-          System.out.println(post.getText());
+          if (post.getIsRoot()) {
+            // check whether we already have a copy of this OP
+            boolean haveOP = false;
+
+            for (ChanThread t : threads) {
+              if (t.getTid().equals(post.getTid())) {
+                haveOP = true;
+                break;
+              }
+            }
+
+            if (!haveOP) {
+              // create a new local thread with this OP
+              ChanThread newThread = new ChanThread("");
+              newThread.addPost(post);
+              threads.add(newThread);
+            }
+          } else {
+            // check whether we have this thread
+            // if not, ignore this post, since it would be pointless to start
+            // in the middle of the conversation
+            ChanThread existThread = null;
+
+            for (ChanThread t : threads) {
+              if (t.getTid().equals(post.getTid())) {
+                existThread = t;
+                break;
+              }
+            }
+
+            if (existThread != null) {
+              // check whether we already have this post
+              boolean havePost = false;
+
+              for (int i = 0; i < existThread.getNumPosts(); i++) {
+                if (existThread.getPost(i).getPid().equals(post.getPid())) {
+                  havePost = true;
+                  break;
+                }
+              }
+
+              if (!havePost) {
+                // we have the thread, but don't have this post yet, so add it
+                existThread.addPost(post);
+              }
+            } else {
+              // ignore the post... for now
+            }
+          }
+
           break;
       }
     }

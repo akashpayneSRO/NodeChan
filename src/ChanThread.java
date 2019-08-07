@@ -44,14 +44,25 @@ public class ChanThread {
 
   /**
    * Add a post to this thread.
+   * Sorted by post time - earliest first.
    */
   public void addPost(ChanPost post) {
-    // TODO: sort by post time!
-    this.posts.add(post);
-
-    if (posts.size() == 1 && post.getIsRoot()) {
+    if (posts.size() == 0 && post.getIsRoot()) {
       // this is the first post in the thread
       this.title = post.getTitle();
+      this.posts.add(post);
+    } else {
+      // sort by time (earliest first)
+      for (int i = 0; i < posts.size(); i++) {
+        if (posts.get(i + 1) != null &&
+            posts.get(i).getPostTime() < post.getPostTime() &&
+            posts.get(i + 1).getPostTime() >= post.getPostTime()) {
+          this.posts.add(i + 1, post);
+          return;
+        }
+      }
+
+      this.posts.add(post);
     }
   }
 

@@ -134,8 +134,6 @@ public class NodeChan {
       first_peer_ip = input;
     }
 
-    System.out.println("");
-
     if (first_peer_ip.equals("nopeer") || first_peer_ip.equals("ptfail")) {
       System.out.println("No peer available from tracker.\n");
     } else {
@@ -164,6 +162,52 @@ public class NodeChan {
           text = scan.nextLine();
 
           createThreadAndSend(title, text);
+        } else if (input.equals("numpeers")) {
+          System.out.println(peers.size());
+        } else if (input.equals("exit")) {
+          System.exit(0);
+        } else if (input.equals("threadlist")) {
+          if (threads.size() == 0) {
+            System.out.println("No active threads.");
+            continue;
+          }
+
+          System.out.println("TID        Subject");
+          for (int i = 0; i < threads.size(); i++) {
+            ChanThread l = threads.get(i);
+
+            System.out.println(l.getTid() + " - " + l.getTitle() + "\n");
+          }
+        } else if (input.equals("readthread")) {
+          System.out.print("Which TID? ");
+          String readTid = scan.nextLine();
+          boolean threadFound = false;
+
+          for (ChanThread t : threads) {
+            if (t.getTid().equals(readTid)) {
+              threadFound = true;
+
+              // print out the thread
+              System.out.println("\n\n" + t.getTid() + " - " + t.getTitle());
+              System.out.println("====================");
+
+              for (int i = 0; i < t.getNumPosts(); i++) {
+                ChanPost postRead = t.getPost(i);
+
+                if (postRead != null) {
+                  System.out.println(postRead.getPid() + "\n");
+                  System.out.println(postRead.getText());
+                  System.out.println("====================");
+                }
+              }
+            }
+          }
+
+          if (!threadFound) {
+            System.out.println("Could not find thread by that TID.");
+          }
+        } else {
+          System.out.println("Command not recognized.");
         }
       }
     } else {
