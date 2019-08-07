@@ -41,6 +41,8 @@ public class IncomingThread extends Thread {
       // check header
       if (recv_data[0] != 'N' || recv_data[1] != 'C') continue;
 
+      // TODO: update peer list with the IP of the sender
+
       switch(recv_data[2]) {
         case 'P':
           // TODO: post propagation/forwarding
