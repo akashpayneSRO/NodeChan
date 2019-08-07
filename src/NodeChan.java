@@ -25,6 +25,16 @@ public class NodeChan {
   /** Max time to keep a peer alive without hearing from it (seconds) **/
   public static final int PEER_TIMEOUT = 300;
 
+  /** Max number of times each client will propagate a single post **/
+  public static final int MAX_PROPS = 3;
+
+
+
+  // command-line options
+
+  /** If true, run in console mode **/
+  private static boolean nogui = false;
+
 
 
 
@@ -48,6 +58,11 @@ public class NodeChan {
   private static ArrayList<ChanThread> threads;
 
   public static void main(String[] args) {
+    // parse command line args
+    for (int i = 0; i < args.length; i++) {
+      if (args[i].equals("-nogui")) nogui = true;
+    }
+
     System.out.println("Welcome to NodeChan.");
 
     peers = new ArrayList<Peer>();
@@ -119,7 +134,7 @@ public class NodeChan {
 
     System.out.println("");
 
-    if (first_peer_ip.equals("nopeer")) {
+    if (first_peer_ip.equals("nopeer") || first_peer_ip.equals("ptfail")) {
       System.out.println("No peer available from tracker. Waiting for " +
                          "connections...\n");
     } else {
@@ -147,7 +162,6 @@ public class NodeChan {
 
       return sc.readLine().trim();
     } catch(Exception e) {
-      System.err.println("Failed to connect to peer tracker, quitting.");
       return "ptfail";
     }
   }
