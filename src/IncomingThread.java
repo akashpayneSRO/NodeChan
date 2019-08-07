@@ -46,7 +46,6 @@ public class IncomingThread extends Thread {
           // TODO: post propagation/forwarding
           // decode the post packet
           ChanPost post = ChanPost.decodeUDP(recv_data);
-          System.out.println("Incoming post!");
           
           if (post.getIsRoot()) {
             // check whether we already have a copy of this OP
@@ -61,7 +60,7 @@ public class IncomingThread extends Thread {
 
             if (!haveOP) {
               // create a new local thread with this OP
-              ChanThread newThread = new ChanThread("");
+              ChanThread newThread = new ChanThread(post.getTid());
               newThread.addPost(post);
               threads.add(newThread);
             }

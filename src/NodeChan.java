@@ -188,7 +188,7 @@ public class NodeChan {
               threadFound = true;
 
               // print out the thread
-              System.out.println("\n\n" + t.getTid() + " - " + t.getTitle());
+              System.out.println("\n\nThread: " + t.getTid() + " - " + t.getTitle());
               System.out.println("====================");
 
               for (int i = 0; i < t.getNumPosts(); i++) {
@@ -206,6 +206,27 @@ public class NodeChan {
           if (!threadFound) {
             System.out.println("Could not find thread by that TID.");
           }
+        } else if (input.equals("reply")) {
+          System.out.print("To which TID? ");
+          String readTid = scan.nextLine();
+          ChanThread replyThread = null;
+
+          for (ChanThread t : threads) {
+            if (t.getTid().equals(readTid)) {
+              replyThread = t;
+              break;
+            }
+          }
+
+          if (replyThread == null) {
+            System.out.println("Could not find thread by that TID.");
+            continue;
+          }
+
+          System.out.println("\nYOUR REPLY:");
+          String reply = scan.nextLine();
+
+          createReplyAndSend(replyThread, reply);
         } else {
           System.out.println("Command not recognized.");
         }
@@ -266,6 +287,30 @@ public class NodeChan {
 
     // add thread to local thread storage
     threads.add(newThread);
+
+    // translate post to bytes
+    byte[] outbytes = ChanPost.encodeUDP(newPost);
+
+    // send post to all peers
+    for (Peer p : peers) {
+      new OutgoingThread(p.getAddress(), NC_PORT, outbytes).start();
+    }
+  }
+
+  /**
+   * Create a new reply to a thread and send it.
+   */
+  public static void createReplyAndSend(ChanThread thread, String reply) {
+    ChanPost newPost = new ChanPost(
+                             thread.getTid(),
+                             "",
+                             false,
+                             thread.getTitle(),
+                             reply
+                       );
+
+    // add new post to local thread
+    thread.addPost(newPost);
 
     // translate post to bytes
     byte[] outbytes = ChanPost.encodeUDP(newPost);

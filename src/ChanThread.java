@@ -53,9 +53,8 @@ public class ChanThread {
       this.posts.add(post);
     } else {
       // sort by time (earliest first)
-      for (int i = 0; i < posts.size(); i++) {
-        if (posts.get(i + 1) != null &&
-            posts.get(i).getPostTime() < post.getPostTime() &&
+      for (int i = 0; i < posts.size() - 1; i++) {
+        if (posts.get(i).getPostTime() < post.getPostTime() &&
             posts.get(i + 1).getPostTime() >= post.getPostTime()) {
           this.posts.add(i + 1, post);
           return;
