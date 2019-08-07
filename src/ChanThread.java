@@ -22,22 +22,24 @@ public class ChanThread {
   /** Storage for all of the posts that have been made in this thread **/
   private ArrayList<ChanPost> posts;
 
-  public ChanThread(String tid, ChanPost firstPost) {
-    // generate random 8-character thread ID
-    byte[] tid_bytes = new byte[8];
-    Random rand = new Random();
+  public ChanThread(String tid) {
+    if (tid.equals("")) {
+      // generate random 8-character thread ID
+      byte[] tid_bytes = new byte[8];
+      Random rand = new Random();
 
-    for (int i = 0; i < 8; i++) {
-      // generate a random ASCII character from 48 to 122
-      tid_bytes[i] = (byte)(rand.nextInt(74) + 48);
+      for (int i = 0; i < 8; i++) {
+        // generate a random ASCII character from 48 to 122
+        tid_bytes[i] = (byte)(rand.nextInt(74) + 48);
+      }
+
+      this.tid = new String(tid_bytes);
+    } else {
+      this.tid = tid;
     }
 
-    this.tid = new String(tid_bytes);
-
     this.posts = new ArrayList<ChanPost>();
-    this.posts.add(firstPost);
-
-    this.title = firstPost.getTitle();
+    this.title = "";
   }
 
   /**
@@ -46,17 +48,22 @@ public class ChanThread {
   public void addPost(ChanPost post) {
     // TODO: sort by post time!
     this.posts.add(post);
+
+    if (posts.size() == 1 && post.getIsRoot()) {
+      // this is the first post in the thread
+      this.title = post.getTitle();
+    }
   }
 
 
   /*
    * getters
    */
-  public String tid() {
+  public String getTid() {
     return this.tid;
   }
 
-  public String title() {
+  public String getTitle() {
     return this.title;
   }
 

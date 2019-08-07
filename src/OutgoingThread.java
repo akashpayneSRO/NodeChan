@@ -1,5 +1,6 @@
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
+import java.net.SocketException;
 import java.net.InetAddress;
 
 import java.io.IOException;
@@ -20,8 +21,13 @@ public class OutgoingThread extends Thread {
   /** The data packet to send **/
   private byte[] outbytes;
 
-  public OutgoingThread(DatagramSocket sock, InetAddress recip, int port, byte[] outbytes) {
-    this.sock = sock;
+  public OutgoingThread(InetAddress recip, int port, byte[] outbytes) {
+    try {
+      this.sock = new DatagramSocket();
+    } catch (SocketException e) {
+
+    }
+
     this.recip = recip;
     this.port = port;
     this.outbytes = outbytes;

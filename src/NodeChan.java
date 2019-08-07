@@ -33,7 +33,7 @@ public class NodeChan {
   // command-line options
 
   /** If true, run in console mode **/
-  private static boolean nogui = false;
+  public static boolean nogui = false;
 
 
 
@@ -66,6 +66,7 @@ public class NodeChan {
     System.out.println("Welcome to NodeChan.");
 
     peers = new ArrayList<Peer>();
+    threads = new ArrayList<ChanThread>();
 
     // get the local ip address
     try {
@@ -111,6 +112,7 @@ public class NodeChan {
       nc_socket = new DatagramSocket(NC_PORT);
     } catch (SocketException e) {
       System.err.println("Failed to establish UDP socket, quitting.");
+      System.err.println(e.getLocalizedMessage());
       return;
     }
 
@@ -135,8 +137,7 @@ public class NodeChan {
     System.out.println("");
 
     if (first_peer_ip.equals("nopeer") || first_peer_ip.equals("ptfail")) {
-      System.out.println("No peer available from tracker. Waiting for " +
-                         "connections...\n");
+      System.out.println("No peer available from tracker.\n");
     } else {
       Peer firstPeer = new Peer(first_peer_ip);
 
@@ -144,6 +145,30 @@ public class NodeChan {
       if (firstPeer.isResolved()) {
         peers.add(firstPeer);
       }
+    }
+
+    if (nogui) {
+      // command-line mode
+      while(true) {
+        System.out.print("> ");
+        input = scan.nextLine();
+
+        if (input.equals("newthread")) {
+          // create a new thread and send it to peers
+          String title;
+          String text;
+          
+          System.out.println("\nTHREAD TITLE:");
+          title = scan.nextLine();
+          System.out.println("\nTHREAD TEXT:");
+          text = scan.nextLine();
+
+          createThreadAndSend(title, text);
+        }
+      }
+    } else {
+      // TODO: implement gui...
+      System.out.println("GUI not implemented yet. Run with option -nogui.");
     }
   }
 
@@ -176,6 +201,34 @@ public class NodeChan {
         peers.remove(i);
         i--;
       }
+    }
+  }
+
+  /**
+   * Create a new thread based on title and text, and send it.
+   */
+  public static void createThreadAndSend(String title, String text) {
+    ChanThread newThread = new ChanThread("");
+
+    ChanPost newPost = new ChanPost(
+                             newThread.getTid(),
+                             "",
+                             true,
+                             title,
+                             text
+                       );
+
+    newThread.addPost(newPost);
+
+    // add thread to local thread storage
+    threads.add(newThread);
+
+    // translate post to bytes
+    byte[] outbytes = ChanPost.encodeUDP(newPost);
+
+    // send post to all peers
+    for (Peer p : peers) {
+      new OutgoingThread(p.getAddress(), NC_PORT, outbytes).start();
     }
   }
 }
