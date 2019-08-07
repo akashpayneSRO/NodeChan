@@ -129,7 +129,7 @@ public class NodeChan {
    */
   public static String retrieve_peer(String me) {
     try {
-      URL peer_db = new URL("http://nodechan.000webhostapp.com/nodes/peer" +
+      URL peer_db = new URL("http://squid-tech.com/nodes/peer" +
                             ".php?ip=" + me);
 
       BufferedReader sc = new BufferedReader(new InputStreamReader(
