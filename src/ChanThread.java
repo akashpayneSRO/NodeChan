@@ -19,6 +19,9 @@ public class ChanThread {
   /** The title of this thread **/
   private String title;
 
+  /** The time of the most recent post in this thread **/
+  private long lastTime;
+
   /** Storage for all of the posts that have been made in this thread **/
   private ArrayList<ChanPost> posts;
 
@@ -39,6 +42,8 @@ public class ChanThread {
 
     this.posts = new ArrayList<ChanPost>();
     this.title = "";
+
+    this.lastTime = 0;
   }
 
   /**
@@ -62,6 +67,20 @@ public class ChanThread {
 
       this.posts.add(post);
     }
+
+    this.lastTime = post.getPostTime();
+  }
+
+  /**
+   * For sorting purposes
+   * Sort from most recent (so, highest) post time to oldest (top-to-bottom)
+   */
+  public int compareTo(ChanThread other) {
+    long t = this.lastTime - other.getLastTime();
+    
+    if (t < 0) return 1;
+    else if (t > 0) return -1;
+    else return 0;
   }
 
 
@@ -78,6 +97,10 @@ public class ChanThread {
 
   public int getNumPosts() {
     return this.posts.size();
+  }
+
+  public long getLastTime() {
+    return this.lastTime;
   }
 
   /**

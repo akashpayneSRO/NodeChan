@@ -1,5 +1,7 @@
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -171,6 +173,14 @@ public class NodeChan {
             System.out.println("No active threads.");
             continue;
           }
+
+          // Sort the threads based on their last post time (most recent first)
+          Collections.sort(threads, new Comparator<ChanThread>() {
+            @Override
+            public int compare(ChanThread thread1, ChanThread thread2) {
+              return thread1.compareTo(thread2);
+            }
+          });
 
           System.out.println("TID        Subject");
           for (int i = 0; i < threads.size(); i++) {
