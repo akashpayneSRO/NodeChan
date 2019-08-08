@@ -1,1 +1,1 @@
-sudo java -cp build/:lib/WaifUPnP.jar NodeChan -nogui
+sudo java -cp build/:lib/WaifUPnP.jar NodeChan -nogui -local

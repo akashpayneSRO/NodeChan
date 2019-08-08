@@ -8,9 +8,11 @@ import java.io.InputStreamReader;
 
 import java.net.URL;
 import java.net.InetAddress;
+import java.net.Inet4Address;
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 
 import com.dosse.upnp.UPnP;
 
@@ -36,6 +38,10 @@ public class NodeChan {
 
   /** If true, run in console mode **/
   public static boolean nogui = false;
+
+  /** If true, run the client using LAN IP addresses only 
+      (no tracker or peers outside of LAN) **/
+  public static boolean local = false;
 
 
 
@@ -63,6 +69,7 @@ public class NodeChan {
     // parse command line args
     for (int i = 0; i < args.length; i++) {
       if (args[i].equals("-nogui")) nogui = true;
+      else if (args[i].equals("-local")) local = true;
     }
 
     System.out.println("Welcome to NodeChan.");
@@ -71,42 +78,56 @@ public class NodeChan {
     threads = new ArrayList<ChanThread>();
 
     // get the local ip address
-    try {
-      URL whatis = new URL("http://bot.whatismyipaddress.com");
+    if (!local) {
+      try {
+        URL whatis = new URL("http://bot.whatismyipaddress.com");
 
-      BufferedReader sc = new BufferedReader(new InputStreamReader(
-        whatis.openStream()));
+        BufferedReader sc = new BufferedReader(new InputStreamReader(
+          whatis.openStream()));
 
-      node_ip = InetAddress.getByName(sc.readLine().trim());
-    } catch (Exception e) {
-      System.err.println("Failed to retrieve this node's IP, quitting.");
-      return;
+        node_ip = InetAddress.getByName(sc.readLine().trim());
+      } catch (Exception e) {
+        System.err.println("Failed to retrieve this node's IP, quitting.");
+        return;
+      }
+    } else {
+      System.out.println("Running on the local network only (-local)");
+
+      try(final DatagramSocket socket = new DatagramSocket()){
+        socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
+        node_ip = socket.getLocalAddress();
+      } catch (Exception e) {
+        System.err.println("Failed to retrieve this node's local IP, quitting.");
+        return;
+      }
     }
 
     System.out.println("Your Node IP is " + node_ip.getHostAddress() + "\n");
 
-    System.out.println("Attempting to enable UPnP port mapping...");
+    if (!local) {
+      System.out.println("Attempting to enable UPnP port mapping...");
 
-    if (UPnP.isUPnPAvailable()) {
-      if (!UPnP.isMappedUDP(NC_PORT)) {
-        if (UPnP.openPortUDP(NC_PORT)) {
-          // UPnP port mapping successful
-          System.out.println("UPnP port mapping enabled.\n");
+      if (UPnP.isUPnPAvailable()) {
+        if (!UPnP.isMappedUDP(NC_PORT)) {
+          if (UPnP.openPortUDP(NC_PORT)) {
+            // UPnP port mapping successful
+            System.out.println("UPnP port mapping enabled.\n");
+          } else {
+            // UPnP port mapping failed
+            System.out.println("UPnP port mapping failed. You may need to " +
+                               "manually forward port " + NC_PORT + " to your " +
+                               "local IP.\n");
+          }
         } else {
-          // UPnP port mapping failed
-          System.out.println("UPnP port mapping failed. You may need to " +
-                             "manually forward port " + NC_PORT + " to your " +
-                             "local IP.\n");
+          System.out.println("Port " + NC_PORT + " already mapped, continuing.\n");
         }
       } else {
-        System.out.println("Port " + NC_PORT + " already mapped, continuing.\n");
+        // client does not have UPnP
+        // the user is either not behind a NAT or they will need to manually
+        // configure port forwarding on their router
+        System.out.println("UPnP not available. You may need to manually " +
+                           "forward port " + NC_PORT + " to your local IP.\n");
       }
-    } else {
-      // client does not have UPnP
-      // the user is either not behind a NAT or they will need to manually
-      // configure port forwarding on their router
-      System.out.println("UPnP not available. You may need to manually " +
-                         "forward port " + NC_PORT + " to your local IP.\n");
     }
 
     // setup UDP socket
@@ -117,33 +138,41 @@ public class NodeChan {
       System.err.println(e.getLocalizedMessage());
       return;
     }
+    
 
     // initialize incoming packet-handling thread
     nc_incoming = new IncomingThread(nc_socket, threads, peers);
     nc_incoming.start();
 
-    System.out.println("Enter peer IP to connect directly,\nleave blank to" +
-                       " connect via the peer tracker: ");
-
+    // command-line inputs
     Scanner scan = new Scanner(System.in);
-    String input = scan.nextLine();
+    String input;
 
-    if (input.equals("")) {
-      // retrieve a peer from the peer tracker
-      first_peer_ip = retrieve_peer(node_ip.getHostAddress());
-    } else {
-      // try to connect directly to the user-specified peer
-      first_peer_ip = input;
-    }
+    if (!local) {
+      System.out.println("Enter peer IP to connect directly,\nleave blank to" +
+                       " connect via the peer tracker, 'none' to not add a peer: ");
 
-    if (first_peer_ip.equals("nopeer") || first_peer_ip.equals("ptfail")) {
-      System.out.println("No peer available from tracker.\n");
-    } else {
-      Peer firstPeer = new Peer(first_peer_ip);
+      input = scan.nextLine();
 
-      // verify that the peer has a valid address, then add it to the peer list
-      if (firstPeer.isResolved()) {
-        peers.add(firstPeer);
+      if (input.equals("")) {
+        // retrieve a peer from the peer tracker
+        first_peer_ip = retrieve_peer(node_ip.getHostAddress());
+      } else {
+        // try to connect directly to the user-specified peer
+        first_peer_ip = input;
+      }
+
+      if (first_peer_ip.equals("nopeer") || first_peer_ip.equals("ptfail")) {
+        System.out.println("No peer available from tracker.\n");
+      } else if (first_peer_ip.equals("none")) {
+        // do nothing
+      } else {
+        Peer firstPeer = new Peer(first_peer_ip);
+
+        // verify that the peer has a valid address, then add it to the peer list
+        if (firstPeer.isResolved()) {
+          peers.add(firstPeer);
+        }
       }
     }
 
@@ -237,6 +266,20 @@ public class NodeChan {
           String reply = scan.nextLine();
 
           createReplyAndSend(replyThread, reply);
+        } else if (input.equals("addpeer")) {
+          System.out.print("Enter peer address: ");
+          String readIP = scan.nextLine();
+
+          Peer newPeer = new Peer(readIP);
+
+          if (!newPeer.isResolved()) {
+            System.err.println("Could not add that address as a peer.");
+          } else {
+            peers.add(newPeer);
+            // TODO: send "hello" packet to new peer
+
+            System.out.println("\nPeer " + readIP + " added.");
+          }
         } else {
           System.out.println("Command not recognized.");
         }
