@@ -1,5 +1,7 @@
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import java.util.ArrayList;
 
@@ -41,7 +43,36 @@ public class IncomingThread extends Thread {
       // check header
       if (recv_data[0] != 'N' || recv_data[1] != 'C') continue;
 
-      // TODO: update peer list with the IP of the sender
+      // update local peer list with the IP of the sender
+      // if we don't already have the sender in the local peer list, we should
+      // add them to our list
+
+      byte[] incomingIP = new byte[4];
+      for (int i = 0; i < 4; i++) {
+        incomingIP[i] = recv_data[i + 4];
+      }
+
+      InetAddress incoming = null;
+
+      try {
+        incoming = InetAddress.getByAddress(incomingIP);
+      } catch (UnknownHostException e) {
+        continue;
+      }
+
+      boolean havePeer = false;
+      for (Peer p : peers) {
+        if (p.getAddress().getHostAddress().equals(incoming.getHostAddress())) {
+          p.heard();
+          havePeer = true;
+          break;
+        }
+      }
+
+      if (!havePeer) {
+        // new peer, add them to our list
+        peers.add(new Peer(incoming.getHostAddress()));
+      }
 
       switch(recv_data[2]) {
         case 'P':
