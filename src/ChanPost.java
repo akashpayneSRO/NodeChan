@@ -152,7 +152,12 @@ public class ChanPost {
     String newTid   = new String(in, 8, 8);
     String newPid   = new String(in, 16, 8);
     String newTitle = new String(in, 24, 50);
-    String newText  = new String(in, 74, 256);
+    String newText  = "";
+
+    for (int i = 74; i < in.length; i++) {
+      newText = newText + (char)in[i];
+    }
+
     InetAddress newAddr = null;
 
     try {
