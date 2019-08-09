@@ -309,7 +309,7 @@ public class NodeChan {
         } else if (input.equals("help")) {
           // display a list of commands to the user
           System.out.println("=== NodeChan command list ===");
-          System.out.println("To use a command, simply enter the command name and follow the prompts.\n\n");
+          System.out.println("To use a command, simply enter the command name and follow the prompts.\n");
 
           System.out.println("addpeer    - add a new peer by IP address");
           System.out.println("exit       - quit NodeChan");
