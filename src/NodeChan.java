@@ -26,7 +26,8 @@ public class NodeChan {
   /** The port the application will use to connect. **/
   public static final int NC_PORT = 13370;
 
-  /** Max time to keep a peer alive without hearing from it (seconds) **/
+  /** Max time to keep a peer alive without hearing from it (seconds)
+      Set to 0 to keep peers alive indefinitely **/
   public static final int PEER_TIMEOUT = 300;
 
   /** Max number of times each client will propagate a single post **/
@@ -177,6 +178,8 @@ public class NodeChan {
     if (nogui) {
       // command-line mode
       while(true) {
+        checkPeerTimeouts();
+
         System.out.print("> ");
         input = scan.nextLine();
 
@@ -481,5 +484,20 @@ public class NodeChan {
 
     // send the hello-packet to the peer
     new OutgoingThread(p.getAddress(), NC_PORT, hello).start();
+  }
+
+  /**
+   * Check for peers that are over the timeout limit and remove them.
+   */
+  public static void checkPeerTimeouts() {
+    if (PEER_TIMEOUT == 0) return;
+
+    for (int i = 0; i < peers.size(); i++) {
+      if (System.currentTimeMillis() - peers.get(i).getLastHeard() > PEER_TIMEOUT * 1000) {
+        peers.remove(i);
+        
+        if (peers.size() > 0) i--;
+      }
+    }
   }
 }
