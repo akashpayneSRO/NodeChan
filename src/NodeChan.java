@@ -43,6 +43,10 @@ public class NodeChan {
       (no tracker or peers outside of LAN) **/
   public static boolean local = false;
 
+  /** If true, do not send hello-packets to new peers.
+      This will cause new peers to not see this client until a message travels 
+      from this client to theirs. **/
+  public static boolean nohello = false;
 
 
 
@@ -286,6 +290,17 @@ public class NodeChan {
           } else {
             System.out.println("Could not get peer from tracker.");
           }
+        } else if (input.equals("hello")) {
+          // keep ourselves alive in the peer lists of our peers
+          if (nohello) {
+            System.out.println("Cannot send hello-packets when the -nohello " +
+                               "flag is set.");
+            continue;
+          } else {
+            for (Peer p : peers) {
+              sendHelloPacket(p);
+            }
+          }
         } else {
           System.out.println("Command not recognized.");
         }
@@ -409,6 +424,42 @@ public class NodeChan {
 
     // add the retrieved peer to our peer list
     peers.add(retrieved);
+
+    // send a hello-packet to the new peer
+    sendHelloPacket(retrieved);
+
     return true;
+  }
+
+  /**
+   * Send a hello-packet in order to add ourselves to a peer's own peer list,
+   * or to keep ourselves alive in their peer list
+   */
+  public static void sendHelloPacket(Peer p) {
+    // do not send hello-packets if the -hohello option is specified
+    if (nohello) return;
+
+    byte[] hello = new byte[8];
+
+    // header bytes
+    hello[0] = 'N';
+    hello[1] = 'C';
+    
+    // post type
+    hello[2] = 'H';
+
+    // flags
+    // TODO: request threads from peer
+    hello[3] = 0;
+
+    // this node's IP
+    byte[] node_addr_bytes = node_ip.getAddress();
+
+    for (int i = 0; i < 4; i++) {
+      hello[i + 4] = node_addr_bytes[i];
+    }
+
+    // send the hello-packet to the peer
+    new OutgoingThread(p.getAddress(), NC_PORT, hello);
   }
 }

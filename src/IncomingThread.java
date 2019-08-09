@@ -147,6 +147,9 @@ public class IncomingThread extends Thread {
           post.received();
 
           break;
+        case 'H':
+          // do nothing, the hello-packet is just for adding new peers
+          break;
       }
     }
   }

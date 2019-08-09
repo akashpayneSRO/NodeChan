@@ -24,3 +24,10 @@ BYTE 16-23 - post ID
 BYTE 24-73 - title of the thread the post belongs to
 
 BYTE 74-329 - post text
+
+
+
+Layout of a hello-packet ('H'):
+Hello-packets contain no data beyond the header bytes. These packets are only
+used for a client to add itself to one of its peers' peer list, or for the
+client to keep itself alive in its peers' peer list.
