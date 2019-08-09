@@ -77,6 +77,7 @@ public class NodeChan {
     for (int i = 0; i < args.length; i++) {
       if (args[i].equals("-nogui")) nogui = true;
       else if (args[i].equals("-local")) local = true;
+      else if (args[i].equals("-nohello")) nohello = true;
     }
 
     System.out.println("Welcome to NodeChan.");
@@ -273,7 +274,7 @@ public class NodeChan {
             System.err.println("Could not add that address as a peer.");
           } else {
             peers.add(newPeer);
-            // TODO: send "hello" packet to new peer
+            sendHelloPacket(newPeer);
 
             System.out.println("\nPeer " + readIP + " added.");
           }
