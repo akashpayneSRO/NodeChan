@@ -65,6 +65,9 @@ public class NodeChan {
   /** Local list of ChanThreads this user has received **/
   private static ArrayList<ChanThread> threads;
 
+  /** URL of the peer tracker to use **/
+  private static String peerTrackerURL = "http://squid-tech.com/nodes/peer.php?ip=";
+
   public static void main(String[] args) {
     // parse command line args
     for (int i = 0; i < args.length; i++) {
@@ -149,30 +152,20 @@ public class NodeChan {
     String input;
 
     if (!local) {
-      System.out.println("Enter peer IP to connect directly,\nleave blank to" +
-                       " connect via the peer tracker, 'none' to not add a peer: ");
+      System.out.println("Enter tracker URL, leave blank for default:");
 
       input = scan.nextLine();
 
-      if (input.equals("")) {
-        // retrieve a peer from the peer tracker
-        first_peer_ip = retrieve_peer(node_ip.getHostAddress());
-      } else {
-        // try to connect directly to the user-specified peer
-        first_peer_ip = input;
+      if (!input.equals("")) {
+        peerTrackerURL = input;
       }
 
-      if (first_peer_ip.equals("nopeer") || first_peer_ip.equals("ptfail")) {
-        System.out.println("No peer available from tracker.\n");
-      } else if (first_peer_ip.equals("none")) {
-        // do nothing
-      } else {
-        Peer firstPeer = new Peer(first_peer_ip);
+      System.out.println("Retrieving initial peer from tracker...");
 
-        // verify that the peer has a valid address, then add it to the peer list
-        if (firstPeer.isResolved()) {
-          peers.add(firstPeer);
-        }
+      if (getPeerFromTracker(peerTrackerURL)) {
+        System.out.println("Initial peer retrieved!");
+      } else {
+        System.out.println("Could not get peer from tracker.");
       }
     }
 
@@ -280,6 +273,19 @@ public class NodeChan {
 
             System.out.println("\nPeer " + readIP + " added.");
           }
+        } else if (input.equals("getpeer")) {
+          if (local) {
+            System.out.println("Cannot add external peers in LAN mode.");
+            continue;
+          }
+
+          System.out.println("Attempting to retrieve peer from tracker...\n");
+
+          if (getPeerFromTracker(peerTrackerURL)) {
+            System.out.println("Successfully added/updated peer.");
+          } else {
+            System.out.println("Could not get peer from tracker.");
+          }
         } else {
           System.out.println("Command not recognized.");
         }
@@ -295,17 +301,22 @@ public class NodeChan {
    *
    * @param me - the IP address of the local node
    */
-  public static String retrieve_peer(String me) {
+  public static Peer retrieve_peer(String me, String trackerURL) {
     try {
-      URL peer_db = new URL("http://squid-tech.com/nodes/peer" +
-                            ".php?ip=" + me);
+      URL peer_db = new URL(trackerURL + me);
 
       BufferedReader sc = new BufferedReader(new InputStreamReader(
         peer_db.openStream()));
 
-      return sc.readLine().trim();
+      String result = sc.readLine().trim();
+
+      if (result.equals("nopeer") || result.equals("nodb")) {
+        return null;
+      } else {
+        return new Peer(result);
+      }
     } catch(Exception e) {
-      return "ptfail";
+      return null;
     }
   }
 
@@ -374,5 +385,30 @@ public class NodeChan {
     for (Peer p : peers) {
       new OutgoingThread(p.getAddress(), NC_PORT, outbytes).start();
     }
+  }
+
+  /**
+   * Request a peer from the tracker specified by trackerURL.
+   * Return false if a peer could not be retrieved, true otherwise.
+   */
+  public static boolean getPeerFromTracker(String trackerURL) {
+    Peer retrieved = retrieve_peer(node_ip.getHostAddress(), trackerURL);
+
+    if (retrieved == null) {
+      return false;
+    }
+
+    // check if we already have this peer
+    // if so, update the peer's time
+    for (Peer p : peers) {
+      if (p.equalsAddress(retrieved.getAddress())) {
+        p.heard();
+        return true;
+      }
+    }
+
+    // add the retrieved peer to our peer list
+    peers.add(retrieved);
+    return true;
   }
 }
