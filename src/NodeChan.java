@@ -297,11 +297,30 @@ public class NodeChan {
             System.out.println("Cannot send hello-packets when the -nohello " +
                                "flag is set.");
             continue;
+          } else if (peers.size() == 0) {
+            System.out.println("No peers to send hello-packets to.");
           } else {
             for (Peer p : peers) {
               sendHelloPacket(p);
             }
+
+            System.out.println("Hello-packet(s) sent.");
           }
+        } else if (input.equals("help")) {
+          // display a list of commands to the user
+          System.out.println("=== NodeChan command list ===");
+          System.out.println("To use a command, simply enter the command name and follow the prompts.\n\n");
+
+          System.out.println("addpeer    - add a new peer by IP address");
+          System.out.println("exit       - quit NodeChan");
+          System.out.println("getpeer    - request a peer from the peer tracker");
+          System.out.println("hello      - send hello-packets to all peers");
+          System.out.println("newthread  - create a new thread");
+          System.out.println("numpeers   - print the number of peers this client has");
+          System.out.println("threadlist - list all threads");
+          System.out.println("readthread - read a thread based on its TID");
+          System.out.println("reply      - reply to a thread based on its TID");
+          
         } else {
           System.out.println("Command not recognized.");
         }
