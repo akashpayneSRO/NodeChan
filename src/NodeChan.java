@@ -162,7 +162,7 @@ public class NodeChan {
     String input;
 
     if (!local) {
-      System.out.println("Enter tracker URL, leave blank for default:");
+      System.out.println("Enter peer tracker URL, leave blank for default:");
 
       input = scan.nextLine();
 

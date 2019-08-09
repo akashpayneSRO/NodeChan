@@ -1,1 +1,1 @@
-sudo java -cp build/:lib/* NodeChan -nogui -local
+sudo java -cp build/:lib/* NodeChan -nogui
