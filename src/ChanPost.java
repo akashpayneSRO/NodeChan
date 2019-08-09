@@ -65,7 +65,7 @@ public class ChanPost {
    * will limit the number of times they forward a single post, unless they
    * are specifically requested to by another client.
    */
-  public void heard() {
+  public void received() {
     this.receiptCount++;
   }
 

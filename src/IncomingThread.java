@@ -62,7 +62,7 @@ public class IncomingThread extends Thread {
 
       boolean havePeer = false;
       for (Peer p : peers) {
-        if (p.getAddress().getHostAddress().equals(incoming.getHostAddress())) {
+        if (p.equalsAddress(incoming)) {
           p.heard();
           havePeer = true;
           break;
@@ -76,7 +76,6 @@ public class IncomingThread extends Thread {
 
       switch(recv_data[2]) {
         case 'P':
-          // TODO: post propagation/forwarding
           // decode the post packet
           ChanPost post = ChanPost.decodeUDP(recv_data);
           
@@ -87,6 +86,7 @@ public class IncomingThread extends Thread {
             for (ChanThread t : threads) {
               if (t.getTid().equals(post.getTid())) {
                 haveOP = true;
+                post = t.getPost(0);
                 break;
               }
             }
@@ -117,6 +117,7 @@ public class IncomingThread extends Thread {
               for (int i = 0; i < existThread.getNumPosts(); i++) {
                 if (existThread.getPost(i).getPid().equals(post.getPid())) {
                   havePost = true;
+                  post = existThread.getPost(i);
                   break;
                 }
               }
@@ -129,6 +130,21 @@ public class IncomingThread extends Thread {
               // ignore the post... for now
             }
           }
+
+          // forward this packet to all peers (except the peer we received the
+          // packet from)
+          //
+          // limit the number of times this client propagates a single post
+          // based on NodeChan.MAX_PROPS
+          if (post.getReceiptCount() < NodeChan.MAX_PROPS) {
+            for (Peer p : peers) {
+              if (!p.equalsAddress(post.getSender_addr())) {
+                new OutgoingThread(p.getAddress(), NodeChan.NC_PORT, recv_data);
+              }
+            }
+          }
+
+          post.received();
 
           break;
       }

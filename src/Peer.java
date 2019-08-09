@@ -36,6 +36,13 @@ public class Peer {
     this.lastHeard = System.currentTimeMillis();
   }
 
+  /**
+   * Return whether or not the address of this peer equals another address
+   */
+  public boolean equalsAddress(InetAddress other) {
+    return this.addr.getHostAddress().equals(other.getHostAddress());
+  }
+
   /*
    * getters
    */
