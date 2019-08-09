@@ -461,6 +461,6 @@ public class NodeChan {
     }
 
     // send the hello-packet to the peer
-    new OutgoingThread(p.getAddress(), NC_PORT, hello);
+    new OutgoingThread(p.getAddress(), NC_PORT, hello).start();
   }
 }
