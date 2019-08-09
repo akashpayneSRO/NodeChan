@@ -77,6 +77,9 @@ public class NodeChan {
   /** Local list of ChanThreads this user has received **/
   private static ArrayList<ChanThread> threads;
 
+  /** List of users that this user has blocked **/
+  private static ArrayList<Peer> blocked;
+
   /** URL of the peer tracker to use **/
   private static String peerTrackerURL = "http://squid-tech.com/nodes/peer.php?ip=";
 
@@ -93,6 +96,7 @@ public class NodeChan {
 
     peers = new ArrayList<Peer>();
     threads = new ArrayList<ChanThread>();
+    blocked = new ArrayList<Peer>();
 
     // get the local ip address
     if (!local) {
@@ -314,6 +318,14 @@ public class NodeChan {
 
           Peer newPeer = new Peer(readIP);
 
+          // check to make sure that we haven't already blocked this peer
+          for (Peer p : peers) {
+            if (p.equalsAddress(newPeer.getAddress())) {
+              System.out.println("Cannot add a blocked user as a peer.");
+              continue;
+            }
+          }
+
           if (!newPeer.isResolved()) {
             System.err.println("Could not add that address as a peer.");
           } else {
@@ -356,6 +368,7 @@ public class NodeChan {
           System.out.println("To use a command, simply enter the command name and follow the prompts.\n");
 
           System.out.println("addpeer    - add a new peer by IP address");
+          System.out.println("block      - block a user based on one of their posts");
           System.out.println("exit       - quit NodeChan");
           System.out.println("getpeer    - request a peer from the peer tracker");
           System.out.println("hello      - send hello-packets to all peers");
@@ -365,6 +378,21 @@ public class NodeChan {
           System.out.println("readthread - read a thread based on its TID");
           System.out.println("reply      - reply to a thread based on its TID");
           
+        } else if (input.equals("block")) {
+          String blockTid;
+          String blockPid;
+
+          System.out.print("Enter TID of the thread: ");
+          blockTid = scan.nextLine();
+
+          System.out.print("Enter PID of the offending post: ");
+          blockPid = scan.nextLine();
+
+          if (blockUser(blockTid, blockPid)) {
+            System.out.println("\nUser blocked.");
+          } else {
+            System.out.println("\nUnable to block the specified user.");
+          }
         } else {
           System.out.println("Command not recognized.");
         }
@@ -536,12 +564,92 @@ public class NodeChan {
   public static void checkPeerTimeouts() {
     if (PEER_TIMEOUT == 0) return;
 
-    for (int i = 0; i < peers.size(); i++) {
+    for (int i = 0; i < peers.size();) {
       if (System.currentTimeMillis() - peers.get(i).getLastHeard() > PEER_TIMEOUT * 1000) {
         peers.remove(i);
-        
-        if (peers.size() > 0) i--;
+      } else {
+        i++;
       }
     }
+  }
+
+  /**
+   * Block another user based on one of their posts.
+   */
+  public static boolean blockUser(String blockTid, String blockPid) {
+    ChanThread blockThread = null;
+    ChanPost blockPost = null;
+
+    // find the thread
+    for (ChanThread t : threads) {
+      if (t.getTid().equals(blockTid)) {
+        blockThread = t;
+        break;
+      }
+    }
+
+    if (blockThread == null) return false;
+
+    // find the post
+    for (int i = 0; i < blockThread.getNumPosts(); i++) {
+      if (blockThread.getPost(i).getPid().equals(blockPid)) {
+        blockPost = blockThread.getPost(i);
+        break;
+      }
+    }
+
+    if (blockPost == null) return false;
+
+    InetAddress blockAddress = blockPost.getSender_addr();
+
+    // check to make sure the user isn't blocking themselves
+    if (blockAddress.getHostAddress().equals(node_ip.getHostAddress()))
+      return false;
+
+    // check all threads for posts by this user
+    for (int t = 0; t < threads.size();) {
+      ChanThread checkThread = threads.get(t);
+
+      if (checkThread.getPost(0).getSender_addr().getHostAddress().equals(blockAddress.getHostAddress())) {
+        threads.remove(t);
+        continue;
+      }
+
+      for (int p = 1; p < checkThread.getNumPosts();) {
+        if (checkThread.getPost(p).getSender_addr().getHostAddress().equals(blockAddress.getHostAddress())) {
+          checkThread.removePost(p);
+        } else {
+          p++;
+        }
+      }
+
+      t++;
+    }
+
+    // add blocked peer to block list
+    Peer blockPeer = new Peer(blockAddress.getHostAddress());
+
+    blocked.add(blockPeer);
+
+    // remove the peer from our peer list
+    for (int i = 0; i < peers.size(); i++) {
+      if (peers.get(i).equalsAddress(blockAddress)) {
+        peers.remove(i);
+        break;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Check whether an InetAddress has been blocked by this client
+   */
+  public static boolean checkBlocked(InetAddress addr) {
+    for (Peer p : blocked) {
+      if (p.equalsAddress(addr)) return true;
+    }
+
+    return false;
   }
 }

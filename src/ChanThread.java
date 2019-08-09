@@ -110,4 +110,11 @@ public class ChanThread {
   public ChanPost getPost(int i) {
     return this.posts.get(i);
   }
+
+  /**
+   * Delete a post (in case of blocking)
+   */
+  public void removePost(int i) {
+    this.posts.remove(i);
+  }
 }

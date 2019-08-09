@@ -60,6 +60,10 @@ public class IncomingThread extends Thread {
         continue;
       }
 
+      // check to make sure we haven't blocked this user
+      // if so, ignore the packet
+      if (NodeChan.checkBlocked(incoming)) continue;
+
       boolean havePeer = false;
       for (Peer p : peers) {
         if (p.equalsAddress(incoming)) {
