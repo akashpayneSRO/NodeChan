@@ -280,7 +280,7 @@ public class NodeChan {
                 ChanPost postRead = t.getPost(i);
 
                 if (postRead != null) {
-                  System.out.println(postRead.getPid() + "\n");
+                  System.out.println("PID: " + postRead.getPid() + "\n");
                   System.out.println(postRead.getText());
                   System.out.println("====================");
                 }
