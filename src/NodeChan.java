@@ -53,6 +53,9 @@ public class NodeChan {
       from this client to theirs. **/
   public static boolean nohello = false;
 
+  /** If true, no initial peer will be retrieved from the tracker. **/
+  public static boolean noinitpeer = false;
+
 
 
 
@@ -83,6 +86,7 @@ public class NodeChan {
       if (args[i].equals("-nogui")) nogui = true;
       else if (args[i].equals("-local")) local = true;
       else if (args[i].equals("-nohello")) nohello = true;
+      else if (args[i].equals("-noinitpeer")) noinitpeer = true;
     }
 
     System.out.println("Welcome to NodeChan.");
@@ -170,12 +174,14 @@ public class NodeChan {
         peerTrackerURL = input;
       }
 
-      System.out.println("Retrieving initial peer from tracker...");
+      if (!noinitpeer) {
+        System.out.println("Retrieving initial peer from tracker...");
 
-      if (getPeerFromTracker(peerTrackerURL)) {
-        System.out.println("Initial peer retrieved!");
-      } else {
-        System.out.println("Could not get peer from tracker.");
+        if (getPeerFromTracker(peerTrackerURL)) {
+          System.out.println("Initial peer retrieved!");
+        } else {
+          System.out.println("Could not get peer from tracker.");
+        }
       }
     }
 
