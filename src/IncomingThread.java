@@ -149,7 +149,6 @@ public class IncomingThread extends Thread {
           break;
         case 'H':
           // do nothing, the hello-packet is just for adding new peers
-          System.out.println("Hello received");
           break;
       }
     }
