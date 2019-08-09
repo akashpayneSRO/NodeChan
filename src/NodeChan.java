@@ -2,6 +2,7 @@ import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.InputMismatchException;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -32,6 +33,9 @@ public class NodeChan {
 
   /** Max number of times each client will propagate a single post **/
   public static final int MAX_PROPS = 3;
+
+  /** The maximum number of threads to display on one page **/
+  public static final int PAGE_SIZE = 10;
 
 
 
@@ -204,6 +208,32 @@ public class NodeChan {
             continue;
           }
 
+          int page = 1;
+
+          if (threads.size() > PAGE_SIZE) {
+            int pages = (threads.size() / PAGE_SIZE) + 1;
+            System.out.print("Which page (out of " + pages + ")? ");
+
+            int pageinput = 1;
+
+            try {
+              pageinput = scan.nextInt();
+              
+              // clear newline
+              scan.nextLine();
+            } catch (InputMismatchException e) {
+              System.err.println("Invalid number.");
+              continue;
+            }
+
+            if (pageinput < 1 || pageinput > pages) {
+              System.err.println("Invalid page.");
+              continue;
+            } else {
+              page = pageinput;
+            }
+          }           
+
           // Sort the threads based on their last post time (most recent first)
           Collections.sort(threads, new Comparator<ChanThread>() {
             @Override
@@ -212,8 +242,13 @@ public class NodeChan {
             }
           });
 
+          System.out.println("Page " + page);
           System.out.println("TID        Subject");
-          for (int i = 0; i < threads.size(); i++) {
+          for (int i = (page - 1) * PAGE_SIZE; 
+                   i < (page - 1) * PAGE_SIZE + PAGE_SIZE &&
+                   i < threads.size(); 
+                   i++) {
+
             ChanThread l = threads.get(i);
 
             System.out.println(l.getTid() + " - " + l.getTitle() + "\n");
@@ -398,6 +433,9 @@ public class NodeChan {
     for (Peer p : peers) {
       new OutgoingThread(p.getAddress(), NC_PORT, outbytes).start();
     }
+
+    // report success
+    System.out.println("\n\nThread posted. Your TID is " + newThread.getTid());
   }
 
   /**
