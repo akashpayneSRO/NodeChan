@@ -44,6 +44,7 @@ When you block a user, all posts and threads they have created will be hidden. Y
 
 ### GUI Mode
 There is currently no graphical interface for NodeChan, but this is a planned feature - coming soon!
+For now, use the "-nogui" option when you run NodeChan to access console mode.
 
 
 ### Peers
