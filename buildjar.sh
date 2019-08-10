@@ -1,3 +1,5 @@
 ./build.sh
-sudo jar cfm NodeChan.jar manifest.mf build/ lib/*
-sudo chmod +x NodeChan.jar
+jar cfm NodeChan.jar manifest.mf build/ lib/*
+
+# compress the distributable tar file
+tar cvzf NodeChan.tar.gz NodeChan.jar build/ lib/ 
