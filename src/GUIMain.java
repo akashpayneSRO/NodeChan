@@ -2,13 +2,13 @@ package com.squidtech.nodechan;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.awt.FlowLayout;
 import java.awt.BorderLayout;
 import java.awt.Color;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JList;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JMenuBar;
@@ -52,6 +52,7 @@ public class GUIMain extends JFrame {
 
   /** Bottom status bar that displays the num of peers this user has **/
   JPanel statusBar;
+  JButton newThread;
   JLabel statusNumPeers;
 
   public GUIMain(ArrayList<ChanThread> threads, ArrayList<Peer> peers) {
@@ -98,12 +99,19 @@ public class GUIMain extends JFrame {
     menuBar.add(threadsMenu);
     
    
-    statusBar = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    statusBar = new JPanel(new BorderLayout());
     statusBar.setBorder(new CompoundBorder(new LineBorder(Color.DARK_GRAY),
                         new EmptyBorder(4, 4, 4, 4)));
 
+    newThread = new JButton(new AbstractAction("New Thread") {
+      public void actionPerformed(ActionEvent e) {
+        new GUICreateNewThread();
+      }
+    });
+    statusBar.add(newThread, BorderLayout.WEST);
+
     statusNumPeers = new JLabel("Peers: " + peers.size());
-    statusBar.add(statusNumPeers);
+    statusBar.add(statusNumPeers, BorderLayout.EAST);
 
     this.add(statusBar, BorderLayout.SOUTH);
     

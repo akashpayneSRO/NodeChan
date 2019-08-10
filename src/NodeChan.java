@@ -3,6 +3,8 @@ package com.squidtech.nodechan;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
+import java.util.Collections;
+import java.util.Comparator;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -329,7 +331,13 @@ public class NodeChan {
             System.out.println("\nPeer " + readIP + " added.");
           }
         } else if (input.equals("getpeer")) {
-          if (local) {
+          if (local) {          // sort our thread list by most recent activity first
+          Collections.sort(threads, new Comparator<ChanThread>() {
+            @Override
+            public int compare(ChanThread thread1, ChanThread thread2) {
+              return thread1.compareTo(thread2);
+            }
+          });
             System.out.println("Cannot add external peers in LAN mode.");
             continue;
           }
@@ -437,7 +445,7 @@ public class NodeChan {
   /**
    * Create a new thread based on title and text, and send it.
    */
-  public static void createThreadAndSend(String title, String text) {
+  public static ChanThread createThreadAndSend(String title, String text) {
     ChanThread newThread = new ChanThread("");
 
     ChanPost newPost = new ChanPost(
@@ -464,6 +472,21 @@ public class NodeChan {
 
     // report success
     System.out.println("\n\nThread posted. Your TID is " + newThread.getTid());
+
+    // sort our thread list by most recent activity first
+    Collections.sort(threads, new Comparator<ChanThread>() {
+      @Override
+      public int compare(ChanThread thread1, ChanThread thread2) {
+        return thread1.compareTo(thread2);
+      }
+    });
+
+    // refresh thread list if GUI is active
+    if (!nogui) {
+      mainGui.refreshThreads();
+    }
+
+    return newThread;
   }
 
   /**
@@ -488,6 +511,19 @@ public class NodeChan {
     // send post to all peers
     for (Peer p : peers) {
       new OutgoingThread(p.getAddress(), NC_PORT, outbytes).start();
+    }
+
+    // sort our thread list by most recent activity first
+    Collections.sort(threads, new Comparator<ChanThread>() {
+      @Override
+      public int compare(ChanThread thread1, ChanThread thread2) {
+        return thread1.compareTo(thread2);
+      }
+    });
+
+    // refresh thread list if GUI is active
+    if (!nogui) {
+      mainGui.refreshThreads();
     }
   }
 
