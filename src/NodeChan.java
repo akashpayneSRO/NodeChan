@@ -321,11 +321,9 @@ public class NodeChan {
           Peer newPeer = new Peer(readIP);
 
           // check to make sure that we haven't already blocked this peer
-          for (Peer p : peers) {
-            if (p.equalsAddress(newPeer.getAddress())) {
-              System.out.println("Cannot add a blocked user as a peer.");
-              continue;
-            }
+          if (checkBlocked(newPeer.getAddress())) {
+            System.out.println("Cannot add a blocked user as a peer.");
+            continue;
           }
 
           if (!newPeer.isResolved()) {
@@ -509,6 +507,13 @@ public class NodeChan {
 
     if (retrieved == null) {
       return false;
+    }
+
+    // check if peer is blocked
+    if (checkBlocked(retrieved.getAddress())) {
+      // we will not add a blocked peer, but we will still return true,
+      // since we would have been able to add this peer
+      return true;
     }
 
     // check if we already have this peer
