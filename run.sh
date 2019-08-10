@@ -1,1 +1,1 @@
-sudo java -cp build/:lib/* com.squidtech.nodechan.NodeChan -nogui
+sudo java -cp build/:lib/* com.squidtech.nodechan.NodeChan -local
