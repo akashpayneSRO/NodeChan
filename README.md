@@ -5,9 +5,9 @@ This project is inspired by the peer-to-peer nature of Bittorrent, the decentral
 
 ## User Manual
 ### Installation
-To install NodeChan, clone this repository and run the "build.sh" script, or otherwise compile the Java files in the "src" directory. Make sure to include "lib/*" in your classpath when compiling.
+The latest NodeChan binary can be downloaded from [SquidTech](http://squid-tech.com/nodechan.html) and run.
 
-Pre-compiled binaries will be available on my website in the future.
+If you would like to build NodeChan from source, clone this repository and run the "build.sh" script, or otherwise compile the Java files in the "src" directory. Make sure to include "lib/*" in your classpath when compiling.
 
 
 ### Running
