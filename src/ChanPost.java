@@ -1,3 +1,5 @@
+package com.squidtech.nodechan;
+
 import java.util.Random;
 
 import java.net.InetAddress;

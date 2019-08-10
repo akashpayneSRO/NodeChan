@@ -1,3 +1,5 @@
+package com.squidtech.nodechan;
+
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -399,7 +401,8 @@ public class NodeChan {
       }
     } else {
       // TODO: implement gui...
-      System.out.println("GUI not implemented yet. Run with option -nogui.");
+      System.out.println("\nGUI not implemented yet. Run with option -nogui.");
+      System.exit(0);
     }
   }
 

@@ -1,3 +1,5 @@
+package com.squidtech.nodechan;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
