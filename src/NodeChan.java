@@ -100,12 +100,6 @@ public class NodeChan {
     threads = new ArrayList<ChanThread>();
     blocked = new ArrayList<Peer>();
 
-  for (int i = 0; i < 50; i++) {
-    ChanThread test = new ChanThread("");
-    test.addPost(new ChanPost("", "", null, true, "TEST" + i, "asdf"));
-    threads.add(test);
-  }
-
     // get the local ip address
     if (!local) {
       try {
@@ -404,6 +398,7 @@ public class NodeChan {
         }
       }
     } else {
+      System.out.println("Starting NodeChan GUI...");
       new GUIMain(threads, peers);
     }
   }
