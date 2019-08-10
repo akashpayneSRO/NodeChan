@@ -2,8 +2,6 @@ package com.squidtech.nodechan;
 
 import java.util.Scanner;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.InputMismatchException;
 
 import java.io.BufferedReader;
@@ -245,14 +243,6 @@ public class NodeChan {
               page = pageinput;
             }
           }           
-
-          // Sort the threads based on their last post time (most recent first)
-          Collections.sort(threads, new Comparator<ChanThread>() {
-            @Override
-            public int compare(ChanThread thread1, ChanThread thread2) {
-              return thread1.compareTo(thread2);
-            }
-          });
 
           System.out.println("Page " + page);
           System.out.println("TID        Subject");

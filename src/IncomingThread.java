@@ -9,6 +9,9 @@ import java.util.ArrayList;
 
 import java.io.IOException;
 
+import java.util.Collections;
+import java.util.Comparator;
+
 /**
  * This class handles all incoming NodeChan packet traffic, and routes the
  * incoming data as necessary.
@@ -151,6 +154,14 @@ public class IncomingThread extends Thread {
           }
 
           post.received();
+
+          // sort our thread list by most recent activity first
+          Collections.sort(threads, new Comparator<ChanThread>() {
+            @Override
+            public int compare(ChanThread thread1, ChanThread thread2) {
+              return thread1.compareTo(thread2);
+            }
+          });
 
           break;
         case 'H':
