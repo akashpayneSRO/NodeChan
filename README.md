@@ -34,6 +34,11 @@ Threads are specified by their "TID", a random 8-character code that is generate
 
 Thread titles are currently limited to 50 characters, and post texts are currently limited to 256 characters. This limit is planned to be increased in future releases.
 
+### Blocking
+When in console mode, you can block a user based on a post they have made by using the "block" command. You must know the TID of the thread the post was made in, and you must also know the PID of the abusive post. Enter these values when prompted.
+
+When you block a user, all posts and threads they have created will be hidden. You will not receive any additional posts or threads from the blocked user. The user will be removed from your peer list if they are on it, and you will not be able to re-add the blocked user as a peer. Blocked users will remain blocked until you restart NodeChan.
+
 
 ### GUI Mode
 There is currently no graphical interface for NodeChan, but this is a planned feature - coming soon!
@@ -70,7 +75,6 @@ A few planned features include:
 * An intuitive GUI mode similar to other messageboard clients (important for user-friendliness)
 * Security features, such as end-to-end encryption, etc.
 * More social features, such as direct messaging thread participants
-* IP blocking, in order to hide annoying or overly-abusive posts
 * Longer messages than 256 characters
 * Support for attaching images to posts
 
