@@ -168,6 +168,15 @@ public class IncomingThread extends Thread {
           // do nothing, the hello-packet is just for adding new peers
           break;
       }
+
+      // check for peers that have timed out
+      NodeChan.checkPeerTimeouts();
+
+      // update the GUI when we receive packets, if GUI mode and auto-refresh
+      // are both enabled
+      if (!NodeChan.nogui && NodeChan.autorefresh) {
+        NodeChan.mainGui.refreshThreads();
+      }
     }
   }
 }

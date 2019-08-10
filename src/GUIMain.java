@@ -14,6 +14,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JMenu;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.AbstractAction;
 import javax.swing.border.CompoundBorder;
@@ -47,6 +48,7 @@ public class GUIMain extends JFrame {
   /** "Threads" menu options **/
   JMenu threadsMenu;
   JMenuItem refresh;
+  JCheckBoxMenuItem autorefresh;
 
   /** Bottom status bar that displays the num of peers this user has **/
   JPanel statusBar;
@@ -82,6 +84,14 @@ public class GUIMain extends JFrame {
       }
     });
     threadsMenu.add(refresh);
+
+    autorefresh = new JCheckBoxMenuItem(new AbstractAction("Autorefresh") {
+      public void actionPerformed(ActionEvent e) {
+        NodeChan.autorefresh = autorefresh.getState();
+      }
+    });
+    autorefresh.setState(true);
+    threadsMenu.add(autorefresh);
 
 
     menuBar.add(fileMenu);

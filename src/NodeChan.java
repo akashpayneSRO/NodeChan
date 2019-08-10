@@ -56,6 +56,9 @@ public class NodeChan {
   /** If true, no initial peer will be retrieved from the tracker. **/
   public static boolean noinitpeer = false;
 
+  /** Whether to auto-refresh the thread list in GUI mode **/
+  public static boolean autorefresh = true;
+
 
 
 
@@ -82,6 +85,9 @@ public class NodeChan {
 
   /** URL of the peer tracker to use **/
   private static String peerTrackerURL = "http://squid-tech.com/nodes/peer.php?ip=";
+
+  /** Main GUI object **/
+  public static GUIMain mainGui;
 
   public static void main(String[] args) {
     // parse command line args
@@ -192,8 +198,6 @@ public class NodeChan {
     if (nogui) {
       // command-line mode
       while(true) {
-        checkPeerTimeouts();
-
         System.out.print("> ");
         input = scan.nextLine();
 
@@ -389,7 +393,7 @@ public class NodeChan {
       }
     } else {
       System.out.println("Starting NodeChan GUI...");
-      new GUIMain(threads, peers);
+      mainGui = new GUIMain(threads, peers);
     }
   }
 
