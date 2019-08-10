@@ -385,7 +385,7 @@ public class NodeChan {
           System.out.print("Enter TID of the thread: ");
           blockTid = scan.nextLine();
 
-          System.out.print("Enter PID of the offending post: ");
+          System.out.print("Enter PID of the abusive post: ");
           blockPid = scan.nextLine();
 
           if (blockUser(blockTid, blockPid)) {
