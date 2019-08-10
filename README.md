@@ -11,7 +11,9 @@ If you would like to build NodeChan from source, clone this repository and run t
 
 
 ### Running
-Run the "run.sh" script, or otherwise run the NodeChan.class file that was created as a result of compilation. Again, make sure to include the "lib/*" directory in your classpath.
+If you are running the pre-compiled binary, all you have to do is type "java -jar NodeChan.jar \[-options\]" on your command line.
+
+If you are running from source, run the "run.sh" script, or otherwise run the NodeChan.class file that was created as a result of compilation. Again, make sure to include the "lib/*" directory in your classpath.
 
 * Include the command-line argument "-nogui" to run NodeChan in console mode
 * Include the command-line argument "-local" to run NodeChan in LAN mode (see section "LAN Mode")
