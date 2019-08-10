@@ -5,7 +5,7 @@ This project is inspired by the peer-to-peer nature of Bittorrent, the decentral
 
 ## User Manual
 ### Installation
-The latest NodeChan binary can be downloaded from [SquidTech](http://squid-tech.com/nodechan.html) and run.
+The latest stable binary can be downloaded from [SquidTech](http://squid-tech.com/nodechan.html) and run.
 
 If you would like to build NodeChan from source, clone this repository and run the "build.sh" script, or otherwise compile the Java files in the "src" directory. Make sure to include "lib/*" in your classpath when compiling.
 
