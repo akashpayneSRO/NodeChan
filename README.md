@@ -17,7 +17,7 @@ If you are running from source, run the "run.sh" script, or otherwise run the No
 
 * Include the command-line argument "-nogui" to run NodeChan in console mode
 * Include the command-line argument "-local" to run NodeChan in LAN mode (see section "LAN Mode")
-* Include the command-line argument "-nohello" to not send 'hello-packets' (see format.txt)
+* Include the command-line argument "-nohello" to not send 'hello-packets' (not recommended, see format.txt)
 * Include the command-line argument "-noinitpeer" to not connect to an initial peer from the tracker
 
 
@@ -26,41 +26,40 @@ When NodeChan starts, the program will first attempt to enable UPnP port mapping
 
 Next, if you are not in LAN mode, you will be prompted to enter a peer tracker URL. It is recommended to leave this as default, unless you are hosting your own peer tracker. See section "Peer Tracker" for more information.
 
-Finally, if you are not in LAN mode, NodeChan will attempt to retrieve an initial peer from the peer tracker. After that, you will be sent to the console interface or the GUI, depending on command-line options.
+Finally, if you are not in LAN mode, NodeChan will attempt to retrieve an initial peer from the peer tracker. After that, you will be sent to the main interface.
 
 
-### Console Mode
-In the main console, you can create threads, read threads, reply to threads, add peers, and perform other operations. Simply enter a command and enter necessary information when prompted. Type "help" to see a list of all commands and their functions.
+### Graphical Mode
+When you reach the main screen, you will gradually see thread titles start to list themselves as you receive threads from your peers. Double click on a displayed thread to read that thread or reply to it. Your current number of peers is listed at the bottom-right.
 
-Threads are specified by their "TID", a random 8-character code that is generated when a thread is posted. A thread's TID can be observed when the "threadlist" command is entered. This is the value that you need to enter when you are prompted during the "reply" command.
+If you find that threads are loading and moving around too quickly, you can disable autorefresh by unchecking the "Threads->Autorefresh" main menu option. Then you will need to manually refresh the thread list by clicking "Threads->Refresh".
 
-Thread titles are currently limited to 50 characters, and post texts are currently limited to 256 characters. This limit is planned to be increased in future releases.
+Click on the "New Thread" button at the bottom-left side of the screen to post your own thread. Thread titles are currently limited to 50 characters, and post texts are currently limited to 256 characters. This limit is planned to be increased in future releases. Note that you may type your posts outside of these limits, but your peers will receive your posts trimmed to the limits.
 
 ### Blocking
-When in console mode, you can block a user based on a post they have made by using the "block" command. You must know the TID of the thread the post was made in, and you must also know the PID of the abusive post. Enter these values when prompted.
+You can block a user by right-clicking on one of the threads they have posted or one of the posts they have made and clicking "Block".
 
 When you block a user, all posts and threads they have created will be hidden. You will not receive any additional posts or threads from the blocked user. The user will be removed from your peer list if they are on it, and you will not be able to re-add the blocked user as a peer. Blocked users will remain blocked until you restart NodeChan.
 
 
-### GUI Mode
-There is currently no graphical interface for NodeChan, but this is a planned feature - coming soon!
-For now, use the "-nogui" option when you run NodeChan to access console mode.
+### Console Mode
+Console mode is currently unsupported, and is likely to be removed in future versions. Presently, console mode is only used for debugging purposes. Use the "-nogui" command line argument to access console mode, and enter "help" for a list of commands.
 
 
 ### Peers
 Peers are the most important aspect of NodeChan. They are the other network users that you have connected to. When you create a thread or post, your content will be sent to your peers, who will send it to all of their peers, and so on. In this way, posts are able to be propagated across the entire network without the use of a central server.
 
-The more peers a client has, the further and more thoroughly their posts will be able to propagate. However, having an excessive number of peers could lead to reduced local performace, as well as cluttered traffic on the NodeChan network. It is recommended to choose a reasonable number of peers that balances these considerations.
+The more peers a client has, the further and more thoroughly their posts will be able to propagate. However, having an excessive number of peers could lead to reduced local performance, as well as cluttered traffic on the NodeChan network. It is recommended to choose a reasonable number of peers that balances these considerations.
 
 Peers will time out and be removed from your peer list if they do not send you any data for a length of time. This prevents you from wasting resources sending content to peers that may have disconnected from the network.
 
-To add a peer with a known IP address, use the "addpeer" command. Use the "getpeer" command to retrieve a peer from the peer tracker. When you add a peer, they also automatically add you as a peer as well, unless you have specified the "-nohello" argument.
+To add a peer with a known IP address, use the "Peers->Add Peer..." option from the main menu. Use the "Peers->Get Peer From Tracker" option to retrieve a peer from the peer tracker. When you add a peer, they also automatically add you as a peer, unless you have specified the "-nohello" argument.
 
 
 ### Peer Tracker
-The peer tracker is a PHP script that I am hosting on my website. When the script is loaded (and your IP is provided in the "?ip=" query string), the script returns the IP address of a random node that is also connected to the NodeChan network. Your IP is also added to the database, so other users can add you as a peer. When you run the "getpeer" command, the client automatically does all of this and then adds the retrieved peer to your peer list.
+The peer tracker is a PHP script that I am hosting on my website. When the script is loaded (and your IP is provided in the "?ip=" query string), the script returns the IP address of a random node that is also connected to the NodeChan network. Your IP is also added to the database, so other users can add you as a peer. When you click the "Peers->"Get Peer From Tracker" main menu option, the client automatically does all of this and then adds the retrieved peer to your peer list.
 
-IP addresses in the peer tracker time out after 10 minutes and are removed from the database.
+IP addresses in the peer tracker time out if they are not heard from for 10 minutes and are removed from the database.
 
 The peer tracker is the only part of the NodeChan system that could be considered somewhat "centralized", but it is also completely optional. Users could share their IP addresses and connect directly to one another, forming their own small networks without ever interacting with a traditional web server.
 
@@ -75,7 +74,7 @@ If the argument "-local" is included when NodeChan is run, you will be able to c
 While NodeChan is already almost completely functional, it is not finished, nor is it particularly pretty or user-friendly. We are seeking contributors to help improve existing code and implement new features.
 
 A few planned features include:
-* An intuitive GUI mode similar to other messageboard clients (important for user-friendliness)
+* Improvements to the graphical interface
 * Security features, such as end-to-end encryption, etc.
 * More social features, such as direct messaging thread participants
 * Longer messages than 256 characters
