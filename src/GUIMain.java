@@ -22,6 +22,7 @@ import javax.swing.AbstractAction;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.JPopupMenu;
 
 import java.util.ArrayList;
 import java.util.Vector;
@@ -159,11 +160,19 @@ public class GUIMain extends JFrame {
     threadList.addMouseListener(new MouseAdapter() {
       public void mouseClicked(MouseEvent e) {
         // only open threads on double-click
-        if (e.getClickCount() >= 2) {
+        if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() >= 2) {
           int index = threadList.locationToIndex(e.getPoint());
           ChanThread openThread = threadList.getModel().getElementAt(index);
 
           new GUIThreadView(openThread);
+        } else if (e.getButton() == MouseEvent.BUTTON3) {
+          int index = threadList.locationToIndex(e.getPoint());
+
+          if (index > -1) {
+            ChanThread openThread = threadList.getModel().getElementAt(index);
+
+            new GUIRightClickMenu(openThread, openThread.getPost(0), e, (JFrame)getRef());
+          }
         }
       }
     });
@@ -197,8 +206,8 @@ public class GUIMain extends JFrame {
 
   /**
    * this is really weird, but it works... maybe a better way to do it?
-   * I'm doing this so that the GUIAddPeer can have access to
-   * the main GUI for refreshing purposes
+   * I'm doing this so that this can be accessed from inside anonymous
+   * classes
    */
   public GUIMain getRef() {
     return this;

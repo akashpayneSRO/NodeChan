@@ -691,8 +691,10 @@ public class NodeChan {
     InetAddress blockAddress = blockPost.getSender_addr();
 
     // check to make sure the user isn't blocking themselves
-    if (blockAddress.getHostAddress().equals(node_ip.getHostAddress()))
+    if (blockAddress.getHostAddress().equals(node_ip.getHostAddress())) {
+      System.out.println("You can't block yourself!");
       return false;
+    }
 
     // check all threads for posts by this user
     for (int t = 0; t < threads.size();) {
@@ -725,6 +727,10 @@ public class NodeChan {
         peers.remove(i);
         break;
       }
+    }
+
+    if (!nogui) {
+      mainGui.refreshThreads();
     }
 
     return true;
