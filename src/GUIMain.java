@@ -52,6 +52,12 @@ public class GUIMain extends JFrame {
   JMenuItem refresh;
   JCheckBoxMenuItem autorefresh;
 
+  /** "Peers" menu options **/
+  JMenu peersMenu;
+  JMenuItem addPeer;
+  JMenuItem getPeer;
+  JCheckBoxMenuItem keepAlive;
+
   /** Bottom status bar that displays the num of peers this user has **/
   JPanel statusBar;
   JButton newThread;
@@ -97,8 +103,38 @@ public class GUIMain extends JFrame {
     threadsMenu.add(autorefresh);
 
 
+    peersMenu = new JMenu("Peers");
+
+    addPeer = new JMenuItem(new AbstractAction("Add Peer...") {
+      public void actionPerformed(ActionEvent e) {
+        new GUIAddPeer(getRef());
+      }
+    });
+    peersMenu.add(addPeer);
+
+    getPeer = new JMenuItem(new AbstractAction("Get Peer From Tracker") {
+      public void actionPerformed(ActionEvent e) {
+        if (NodeChan.getPeerFromTracker(NodeChan.peerTrackerURL)) {
+          System.out.println("Added peer from tracker.");
+        } else {
+          System.out.println("No peer available from tracker.");
+        }
+      }
+    });
+    peersMenu.add(getPeer);
+
+    keepAlive = new JCheckBoxMenuItem(new AbstractAction("Keep Alive") {
+      public void actionPerformed(ActionEvent e) {
+        NodeChan.keepAlive = keepAlive.getState();
+      }
+    });
+    keepAlive.setState(true);
+    peersMenu.add(keepAlive);
+
+
     menuBar.add(fileMenu);
     menuBar.add(threadsMenu);
+    menuBar.add(peersMenu);
     
    
     statusBar = new JPanel(new BorderLayout());
@@ -157,5 +193,14 @@ public class GUIMain extends JFrame {
   public void refreshThreads() {
     threadList.setListData(new Vector<ChanThread>(threads));
     statusNumPeers.setText("Peers: " + peers.size());
+  }
+
+  /**
+   * this is really weird, but it works... maybe a better way to do it?
+   * I'm doing this so that the GUIAddPeer can have access to
+   * the main GUI for refreshing purposes
+   */
+  public GUIMain getRef() {
+    return this;
   }
 }
