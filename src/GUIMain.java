@@ -2,6 +2,8 @@ package com.squidtech.nodechan;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.BorderLayout;
 import java.awt.Color;
 
@@ -60,9 +62,9 @@ public class GUIMain extends JFrame {
     this.threads = threads;
     this.peers = peers;
 
-    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     this.setLayout(new BorderLayout());
-    setSize(640, 480);
+    this.setSize(640, 480);
 
     menuBar = new JMenuBar();
     this.setJMenuBar(menuBar);
@@ -118,6 +120,18 @@ public class GUIMain extends JFrame {
 
     threadList = new JList<>(new Vector<ChanThread>(threads));
 
+    threadList.addMouseListener(new MouseAdapter() {
+      public void mouseClicked(MouseEvent e) {
+        // only open threads on double-click
+        if (e.getClickCount() >= 2) {
+          int index = threadList.locationToIndex(e.getPoint());
+          ChanThread openThread = threadList.getModel().getElementAt(index);
+
+          new GUIThreadView(openThread);
+        }
+      }
+    });
+
     threadList.setCellRenderer(new DefaultListCellRenderer() {
       @Override
       public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -125,13 +139,18 @@ public class GUIMain extends JFrame {
 
         if (renderer instanceof JLabel && value instanceof ChanThread) {
           ((JLabel)renderer).setText(((ChanThread)value).getTitle());
+          ((JLabel)renderer).setBorder(new LineBorder(new Color(0, 0, 0)));
         }
 
         return renderer;
       }
     });
 
-    this.add(new JScrollPane(threadList));
+    threadList.setFixedCellHeight(40);
+
+    scrollPane = new JScrollPane(threadList);
+    this.add(scrollPane);
+
     setVisible(true);
   }
 

@@ -446,6 +446,11 @@ public class NodeChan {
    * Create a new thread based on title and text, and send it.
    */
   public static ChanThread createThreadAndSend(String title, String text) {
+    if (title.equals("") || text.equals("")) {
+      System.out.println("Your title and text must not be blank!");
+      return null;
+    }
+
     ChanThread newThread = new ChanThread("");
 
     ChanPost newPost = new ChanPost(
@@ -493,6 +498,11 @@ public class NodeChan {
    * Create a new reply to a thread and send it.
    */
   public static void createReplyAndSend(ChanThread thread, String reply) {
+    if (reply.equals("")) {
+      System.out.println("Your reply must contain text!");
+      return;
+    }
+
     ChanPost newPost = new ChanPost(
                              thread.getTid(),
                              "",

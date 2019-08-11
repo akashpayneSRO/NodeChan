@@ -63,15 +63,13 @@ public class GUICreateNewThread extends JFrame {
 
     submit = new JButton(new AbstractAction("Post Thread") {
       public void actionPerformed(ActionEvent e) {
-        if (titleField.getText().equals("") || textField.getText().equals("")) {
-          System.out.println("New post must have a title and text!");
-          return;
-        }
         ChanThread newThread = NodeChan.createThreadAndSend(titleField.getText(), textField.getText());
 
-        // TODO: open the user's new thread
-
-        closeThreadCreateScreen();
+        // automatically open the thread the user has created
+        if (newThread != null) {
+          new GUIThreadView(newThread);
+          closeThreadCreateScreen();
+        }
       }
     });
 
