@@ -76,7 +76,12 @@ public class GUIThreadView extends JFrame {
         refreshPosts();
       }
     });
-    refreshButton = new JButton("Refresh");
+
+    refreshButton = new JButton(new AbstractAction("Refresh") {
+      public void actionPerformed(ActionEvent e) {
+        refreshPosts();
+      }
+    });
 
     JPanel buttons = new JPanel(new FlowLayout());
     buttons.add(replyButton);
