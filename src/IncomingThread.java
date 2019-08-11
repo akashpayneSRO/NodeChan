@@ -78,7 +78,7 @@ public class IncomingThread extends Thread {
         }
       }
 
-      if (!havePeer) {
+      if (!havePeer && peers.size() < NodeChan.AUTO_ADD_PEER_LIMIT) {
         // new peer, add them to our list
         peers.add(new Peer(incoming.getHostAddress()));
       }

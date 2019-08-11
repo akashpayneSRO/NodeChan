@@ -42,6 +42,9 @@ public class NodeChan {
   /** The time to delay between sending "keep-alive" packets (second) **/
   public static final int KEEP_ALIVE_DELAY = 150;
 
+  /** No new peers will be automatically added when the client has at least this many peers **/
+  public static final int AUTO_ADD_PEER_LIMIT = 50;
+
 
 
   // command-line options
