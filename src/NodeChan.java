@@ -2,9 +2,9 @@ package com.squidtech.nodechan;
 
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.InputMismatchException;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -36,8 +36,14 @@ public class NodeChan {
   /** Max number of times each client will propagate a single post **/
   public static final int MAX_PROPS = 3;
 
-  /** The maximum number of threads to display on one page **/
+  /** The maximum number of threads to display on one console page **/
   public static final int PAGE_SIZE = 10;
+
+  /** The time to delay between sending "keep-alive" packets (second) **/
+  public static final int KEEP_ALIVE_DELAY = 150;
+
+  /** No new peers will be automatically added when the client has at least this many peers **/
+  public static final int AUTO_ADD_PEER_LIMIT = 50;
 
 
 
@@ -57,6 +63,12 @@ public class NodeChan {
 
   /** If true, no initial peer will be retrieved from the tracker. **/
   public static boolean noinitpeer = false;
+
+  /** Whether to auto-refresh the thread list in GUI mode **/
+  public static boolean autorefresh = true;
+
+  /** Whether to keep ourselves alive on the network while idle **/
+  public static boolean keepAlive = true;
 
 
 
@@ -83,7 +95,10 @@ public class NodeChan {
   private static ArrayList<Peer> blocked;
 
   /** URL of the peer tracker to use **/
-  private static String peerTrackerURL = "http://squid-tech.com/nodes/peer.php?ip=";
+  public static String peerTrackerURL = "http://squid-tech.com/nodes/peer.php?ip=";
+
+  /** Main GUI object **/
+  public static GUIMain mainGui;
 
   public static void main(String[] args) {
     // parse command line args
@@ -191,11 +206,35 @@ public class NodeChan {
       }
     }
 
+    // start sending keep-alive packets to peers
+    new Thread() {
+      public void run() {
+        while(true) {
+          try {
+            Thread.sleep(KEEP_ALIVE_DELAY * 1000);
+          } catch (InterruptedException e) {
+            System.err.println("keepAlive interrupted (thread stopped)");
+            break;
+          }
+
+          if (keepAlive) {
+            if (!nohello) {
+              for (Peer p : peers) {
+                sendHelloPacket(p);
+              }
+            }
+
+            if (!local) {
+              getPeerFromTracker(peerTrackerURL);
+            }
+          }
+        }
+      }
+    }.start();
+
     if (nogui) {
       // command-line mode
       while(true) {
-        checkPeerTimeouts();
-
         System.out.print("> ");
         input = scan.nextLine();
 
@@ -245,14 +284,6 @@ public class NodeChan {
               page = pageinput;
             }
           }           
-
-          // Sort the threads based on their last post time (most recent first)
-          Collections.sort(threads, new Comparator<ChanThread>() {
-            @Override
-            public int compare(ChanThread thread1, ChanThread thread2) {
-              return thread1.compareTo(thread2);
-            }
-          });
 
           System.out.println("Page " + page);
           System.out.println("TID        Subject");
@@ -318,24 +349,15 @@ public class NodeChan {
           System.out.print("Enter peer address: ");
           String readIP = scan.nextLine();
 
-          Peer newPeer = new Peer(readIP);
-
-          // check to make sure that we haven't already blocked this peer
-          if (checkBlocked(newPeer.getAddress())) {
-            System.out.println("Cannot add a blocked user as a peer.");
-            continue;
-          }
-
-          if (!newPeer.isResolved()) {
-            System.err.println("Could not add that address as a peer.");
-          } else {
-            peers.add(newPeer);
-            sendHelloPacket(newPeer);
-
-            System.out.println("\nPeer " + readIP + " added.");
-          }
+          addPeer(readIP);
         } else if (input.equals("getpeer")) {
-          if (local) {
+          if (local) {          // sort our thread list by most recent activity first
+          Collections.sort(threads, new Comparator<ChanThread>() {
+            @Override
+            public int compare(ChanThread thread1, ChanThread thread2) {
+              return thread1.compareTo(thread2);
+            }
+          });
             System.out.println("Cannot add external peers in LAN mode.");
             continue;
           }
@@ -398,9 +420,8 @@ public class NodeChan {
         }
       }
     } else {
-      // TODO: implement gui...
-      System.out.println("\nGUI not implemented yet. Run with option -nogui.");
-      System.exit(0);
+      System.out.println("Starting NodeChan GUI...");
+      mainGui = new GUIMain(threads, peers);
     }
   }
 
@@ -444,7 +465,12 @@ public class NodeChan {
   /**
    * Create a new thread based on title and text, and send it.
    */
-  public static void createThreadAndSend(String title, String text) {
+  public static ChanThread createThreadAndSend(String title, String text) {
+    if (title.equals("") || text.equals("")) {
+      System.out.println("Your title and text must not be blank!");
+      return null;
+    }
+
     ChanThread newThread = new ChanThread("");
 
     ChanPost newPost = new ChanPost(
@@ -471,12 +497,32 @@ public class NodeChan {
 
     // report success
     System.out.println("\n\nThread posted. Your TID is " + newThread.getTid());
+
+    // sort our thread list by most recent activity first
+    Collections.sort(threads, new Comparator<ChanThread>() {
+      @Override
+      public int compare(ChanThread thread1, ChanThread thread2) {
+        return thread1.compareTo(thread2);
+      }
+    });
+
+    // refresh thread list if GUI is active
+    if (!nogui) {
+      mainGui.refreshThreads();
+    }
+
+    return newThread;
   }
 
   /**
    * Create a new reply to a thread and send it.
    */
   public static void createReplyAndSend(ChanThread thread, String reply) {
+    if (reply.equals("")) {
+      System.out.println("Your reply must contain text!");
+      return;
+    }
+
     ChanPost newPost = new ChanPost(
                              thread.getTid(),
                              "",
@@ -496,6 +542,43 @@ public class NodeChan {
     for (Peer p : peers) {
       new OutgoingThread(p.getAddress(), NC_PORT, outbytes).start();
     }
+
+    // sort our thread list by most recent activity first
+    Collections.sort(threads, new Comparator<ChanThread>() {
+      @Override
+      public int compare(ChanThread thread1, ChanThread thread2) {
+        return thread1.compareTo(thread2);
+      }
+    });
+
+    // refresh thread list if GUI is active
+    if (!nogui) {
+      mainGui.refreshThreads();
+    }
+  }
+
+  /**
+   * Add a Peer from a specific IP address
+   */
+  public static boolean addPeer(String readIP) {
+    Peer newPeer = new Peer(readIP);
+
+    // check to make sure that we haven't already blocked this peer
+    if (checkBlocked(newPeer.getAddress())) {
+      System.out.println("Cannot add a blocked user as a peer.");
+      return false;
+    }
+
+    if (!newPeer.isResolved()) {
+      System.err.println("Could not add that address as a peer.");
+      return false;
+    }
+    
+    peers.add(newPeer);
+    sendHelloPacket(newPeer);
+
+    System.out.println("\nPeer " + readIP + " added.");
+    return true;
   }
 
   /**
@@ -611,8 +694,10 @@ public class NodeChan {
     InetAddress blockAddress = blockPost.getSender_addr();
 
     // check to make sure the user isn't blocking themselves
-    if (blockAddress.getHostAddress().equals(node_ip.getHostAddress()))
+    if (blockAddress.getHostAddress().equals(node_ip.getHostAddress())) {
+      System.out.println("You can't block yourself!");
       return false;
+    }
 
     // check all threads for posts by this user
     for (int t = 0; t < threads.size();) {
@@ -645,6 +730,10 @@ public class NodeChan {
         peers.remove(i);
         break;
       }
+    }
+
+    if (!nogui) {
+      mainGui.refreshThreads();
     }
 
     return true;

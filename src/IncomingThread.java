@@ -9,6 +9,9 @@ import java.util.ArrayList;
 
 import java.io.IOException;
 
+import java.util.Collections;
+import java.util.Comparator;
+
 /**
  * This class handles all incoming NodeChan packet traffic, and routes the
  * incoming data as necessary.
@@ -75,7 +78,7 @@ public class IncomingThread extends Thread {
         }
       }
 
-      if (!havePeer) {
+      if (!havePeer && peers.size() < NodeChan.AUTO_ADD_PEER_LIMIT) {
         // new peer, add them to our list
         peers.add(new Peer(incoming.getHostAddress()));
       }
@@ -152,10 +155,27 @@ public class IncomingThread extends Thread {
 
           post.received();
 
+          // sort our thread list by most recent activity first
+          Collections.sort(threads, new Comparator<ChanThread>() {
+            @Override
+            public int compare(ChanThread thread1, ChanThread thread2) {
+              return thread1.compareTo(thread2);
+            }
+          });
+
           break;
         case 'H':
           // do nothing, the hello-packet is just for adding new peers
           break;
+      }
+
+      // check for peers that have timed out
+      NodeChan.checkPeerTimeouts();
+
+      // update the GUI when we receive packets, if GUI mode and auto-refresh
+      // are both enabled
+      if (!NodeChan.nogui && NodeChan.autorefresh) {
+        NodeChan.mainGui.refreshThreads();
       }
     }
   }
