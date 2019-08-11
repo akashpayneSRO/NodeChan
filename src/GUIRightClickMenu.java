@@ -31,6 +31,10 @@ public class GUIRightClickMenu extends JPopupMenu {
     JMenuItem block = new JMenuItem(new AbstractAction("Block") {
       public void actionPerformed(ActionEvent a) {
         NodeChan.blockUser(selectedThread.getTid(), selectedPost.getPid());
+
+        if (frame instanceof GUIThreadView) {
+          ((GUIThreadView)frame).refreshPosts();
+        } 
       }
     });
 

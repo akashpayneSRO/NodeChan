@@ -8,6 +8,8 @@ import java.awt.FlowLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseAdapter;
 
 import javax.swing.JFrame;
 import javax.swing.JButton;
@@ -108,6 +110,20 @@ public class GUIThreadView extends JFrame {
       }
     });
 
+    chanPostJList.addMouseListener(new MouseAdapter() {
+      public void mouseClicked(MouseEvent e) {
+        if (e.getButton() == MouseEvent.BUTTON3) {
+          int index = chanPostJList.locationToIndex(e.getPoint());
+
+          if (index > -1) {
+            ChanPost openPost = chanPostJList.getModel().getElementAt(index);
+
+            new GUIRightClickMenu(thread, openPost, e, (JFrame)getRef());
+          }
+        }
+      }
+    });
+
     chanPostJList.setFixedCellHeight(100);
 
     scrollPane = new JScrollPane(chanPostJList);
@@ -125,5 +141,12 @@ public class GUIThreadView extends JFrame {
     }
 
     chanPostJList.setListData(new Vector<ChanPost>(threadPosts));
+  }
+
+  /**
+   * For accessing this object from within an anonymous class
+   */
+  public GUIThreadView getRef() {
+    return this;
   }
 }
