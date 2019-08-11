@@ -30,6 +30,8 @@ Finally, if you are not in LAN mode, NodeChan will attempt to retrieve an initia
 
 
 ### Graphical Mode
+![NodeChan example](http://squid-tech.com/NodeChan_example.png)
+
 When you reach the main screen, you will gradually see thread titles start to list themselves as you receive threads from your peers. Double click on a displayed thread to read that thread or reply to it. Your current number of peers is listed at the bottom-right.
 
 If you find that threads are loading and moving around too quickly, you can disable autorefresh by unchecking the "Threads->Autorefresh" main menu option. Then you will need to manually refresh the thread list by clicking "Threads->Refresh".
