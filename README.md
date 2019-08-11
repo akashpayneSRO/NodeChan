@@ -5,13 +5,15 @@ This project is inspired by the peer-to-peer nature of Bittorrent, the decentral
 
 ## User Manual
 ### Installation
-To install NodeChan, clone this repository and run the "build.sh" script, or otherwise compile the Java files in the "src" directory. Make sure to include "lib/*" in your classpath when compiling.
+The latest stable binary can be downloaded from [SquidTech](http://squid-tech.com/nodechan.html) and run.
 
-Pre-compiled binaries will be available on my website in the future.
+If you would like to build NodeChan from source, clone this repository and run the "build.sh" script, or otherwise compile the Java files in the "src" directory. Make sure to include "lib/*" in your classpath when compiling.
 
 
 ### Running
-Run the "run.sh" script, or otherwise run the NodeChan.class file that was created as a result of compilation. Again, make sure to include the "lib/*" directory in your classpath.
+If you are running the pre-compiled binary, all you have to do is type "java -jar NodeChan.jar \[-options\]" on your command line.
+
+If you are running from source, run the "run.sh" script, or otherwise run the NodeChan.class file that was created as a result of compilation. Again, make sure to include the "lib/*" directory in your classpath.
 
 * Include the command-line argument "-nogui" to run NodeChan in console mode
 * Include the command-line argument "-local" to run NodeChan in LAN mode (see section "LAN Mode")
@@ -42,6 +44,7 @@ When you block a user, all posts and threads they have created will be hidden. Y
 
 ### GUI Mode
 There is currently no graphical interface for NodeChan, but this is a planned feature - coming soon!
+For now, use the "-nogui" option when you run NodeChan to access console mode.
 
 
 ### Peers
