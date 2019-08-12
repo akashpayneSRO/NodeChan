@@ -652,7 +652,6 @@ public class NodeChan {
     hello[2] = 'H';
 
     // flags
-    // TODO: request threads from peer
     hello[3] = 0;
 
     // this node's IP

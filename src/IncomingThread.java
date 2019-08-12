@@ -181,7 +181,7 @@ public class IncomingThread extends Thread {
 
       // update the GUI when we receive packets, if GUI mode and auto-refresh
       // are both enabled
-      if (!NodeChan.nogui && NodeChan.autorefresh) {
+      if (!NodeChan.nogui && NodeChan.autorefresh && NodeChan.mainGui != null) {
         NodeChan.mainGui.refreshThreads();
       }
     }
