@@ -2,9 +2,11 @@ package com.squidtech.nodechan;
 
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.InputMismatchException;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -86,13 +88,13 @@ public class NodeChan {
   private static IncomingThread nc_incoming;
 
   /** List of this node's peers **/
-  private static ArrayList<Peer> peers;
+  private static List<Peer> peers;
 
   /** Local list of ChanThreads this user has received **/
-  private static ArrayList<ChanThread> threads;
+  private static List<ChanThread> threads;
 
   /** List of users that this user has blocked **/
-  private static ArrayList<Peer> blocked;
+  private static List<Peer> blocked;
 
   /** URL of the peer tracker to use **/
   public static String peerTrackerURL = "http://squid-tech.com/nodes/peer.php?ip=";
@@ -111,9 +113,13 @@ public class NodeChan {
 
     System.out.println("Welcome to NodeChan.");
 
-    peers = new ArrayList<Peer>();
-    threads = new ArrayList<ChanThread>();
-    blocked = new ArrayList<Peer>();
+    //peers = new ArrayList<Peer>();
+    //threads = new ArrayList<ChanThread>();
+    //blocked = new ArrayList<Peer>();
+
+    peers = new CopyOnWriteArrayList<Peer>();
+    threads = new CopyOnWriteArrayList<ChanThread>();
+    blocked = new CopyOnWriteArrayList<Peer>();
 
     // get the local ip address
     if (!local) {

@@ -5,7 +5,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import java.io.IOException;
 
@@ -21,12 +21,12 @@ public class IncomingThread extends Thread {
   DatagramSocket sock;
 
   /** The local ChanThread storage **/
-  ArrayList<ChanThread> threads;
+  List<ChanThread> threads;
 
   /** The local list of peers **/
-  ArrayList<Peer> peers;
+  List<Peer> peers;
 
-  public IncomingThread(DatagramSocket sock, ArrayList<ChanThread> threads, ArrayList<Peer> peers) {
+  public IncomingThread(DatagramSocket sock, List<ChanThread> threads, List<Peer> peers) {
     this.sock = sock;
     this.threads = threads;
     this.peers = peers;

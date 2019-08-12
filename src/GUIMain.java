@@ -24,7 +24,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.JPopupMenu;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -34,9 +34,9 @@ import java.util.Vector;
  */
 public class GUIMain extends JFrame {
   /** This user's list of threads **/
-  private ArrayList<ChanThread> threads;
+  private List<ChanThread> threads;
   /** This user's list of peers **/
-  private ArrayList<Peer> peers;
+  private List<Peer> peers;
 
   /** The list of threads that will be displayed to the user **/
   private JList<ChanThread> threadList;
@@ -64,7 +64,7 @@ public class GUIMain extends JFrame {
   JButton newThread;
   JLabel statusNumPeers;
 
-  public GUIMain(ArrayList<ChanThread> threads, ArrayList<Peer> peers) {
+  public GUIMain(List<ChanThread> threads, List<Peer> peers) {
     super("NodeChan");
     this.threads = threads;
     this.peers = peers;
