@@ -35,7 +35,7 @@ public class IncomingThread extends Thread {
   public void run() {
     // handle incoming packets indefinitely
     while (true) {
-      byte[] recv_data = new byte[326];
+      byte[] recv_data = new byte[338];
 
       DatagramPacket receivePacket = new DatagramPacket(recv_data, recv_data.length);
 

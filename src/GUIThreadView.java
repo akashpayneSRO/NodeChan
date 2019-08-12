@@ -62,11 +62,6 @@ public class GUIThreadView extends JFrame {
 
     threadPosts = thread.getPosts();
 
-    // initialize the posts
-    /*for (int i = 0; i < thread.getNumPosts(); i++) {
-      threadPosts.add(thread.getPost(i));
-    }*/
-
     replyBar = new JPanel(new BorderLayout());
     replyBar.setBorder(new CompoundBorder(new LineBorder(Color.DARK_GRAY),
                        new EmptyBorder(5, 5, 10, 5)));

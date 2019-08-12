@@ -23,9 +23,11 @@ BYTE 8-15 - thread ID
 
 BYTE 16-23 - post ID
 
-BYTE 24-73 - title of the thread the post belongs to
+BYTE 24-31 - post time
 
-BYTE 74-329 - post text
+BYTE 32-81 - title of the thread the post belongs to
+
+BYTE 82-337 - post text
 
 
 
