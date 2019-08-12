@@ -23,13 +23,14 @@ public class RequestedThreadSender extends Thread {
     for (int i = 0; i < thread.getNumPosts(); i++) {
       byte[] out = ChanPost.encodeUDP(thread.getPost(i));
 
-      OutgoingThread outThread = new OutgoingThread(recip, NodeChan.NC_PORT, out).start();
+      OutgoingThread outThread = new OutgoingThread(recip, NodeChan.NC_PORT, out);
 
       outThread.start();
 
       try {
         outThread.join();
       } catch (InterruptedException e) {
+        System.out.println("RequestedThreadSender interrupted");
         break;
       }
     }

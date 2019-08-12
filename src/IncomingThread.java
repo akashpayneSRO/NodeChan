@@ -196,6 +196,8 @@ public class IncomingThread extends Thread {
 
           if (reqThread == null) continue;
 
+          System.out.println("Handling request for thread title " + reqThread.getTitle());
+
           new RequestedThreadSender(reqThread, incoming).start();
           break;
       }

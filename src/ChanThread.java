@@ -53,10 +53,10 @@ public class ChanThread {
    * Sorted by post time - earliest first.
    */
   public void addPost(ChanPost post) {
-    if (posts.size() == 0 && post.getIsRoot()) {
+    if (posts.size() == 0 || post.getIsRoot()) {
       // this is the first post in the thread
       this.title = post.getTitle();
-      this.posts.add(post);
+      this.posts.add(0, post);
     } else {
       // sort by time (earliest first)
       for (int i = 0; i < posts.size() - 1; i++) {
