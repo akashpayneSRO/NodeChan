@@ -136,7 +136,15 @@ public class IncomingThread extends Thread {
                 existThread.addPost(post);
               }
             } else {
-              // ignore the post... for now
+              // we don't have this thread yet, so we will create a new local
+              // copy, and also ask the sending peer for the rest of the thread
+              ChanThread tempThread = new ChanThread(post.getTid());
+              tempThread.addPost(post);
+              threads.add(tempThread);
+
+              // request the complete thread from the client that just
+              // sent us this post
+              NodeChan.requestThread(tempThread.getTid(), incoming);
             }
           }
 
@@ -166,6 +174,28 @@ public class IncomingThread extends Thread {
           break;
         case 'H':
           // do nothing, the hello-packet is just for adding new peers
+          break;
+        case 'R':
+          // send a copy of the specified thread to the user we received
+          // the thread-request from
+          String tid = "";
+          ChanThread reqThread = null;
+
+          for (int i = 0; i < 8; i++) {
+            tid += (char) recv_data[i + 8];
+          }
+
+          // find the requested thread in this client's thread list
+          for (int i = 0; i < threads.size(); i++) {
+            if (threads.get(i).equals(tid)) {
+              reqThread = threads.get(i);
+              break;
+            }
+          }
+
+          if (reqThread == null) continue;
+
+          new RequestedThreadSender(reqThread, incoming);
           break;
       }
 

@@ -749,4 +749,42 @@ public class NodeChan {
 
     return false;
   }
+
+  /**
+   * This method sends a request for another client to send a complete copy
+   * of the thread specified by "tid"
+   * This method is used when a client receives a post that is not the
+   * actual OP of the thread, so they need the rest of the thread for the
+   * out-of-order received post to make sense
+   * recip is the InetAddress of the client we're requesting the rest of
+   * the thread from
+   */
+  public static void requestThread(String tid, InetAddress recip) {
+    byte[] request = new byte[16];
+
+    // header bytes
+    request[0] = 'N';
+    request[1] = 'C';
+    
+    // post type
+    request[2] = 'R';
+
+    // flags
+    request[3] = 0;
+
+    // this node's IP
+    byte[] node_addr_bytes = node_ip.getAddress();
+
+    for (int i = 0; i < 4; i++) {
+      request[i + 4] = node_addr_bytes[i];
+    }
+
+    // the TID of the thread this client is requesting
+    for (int i = 0; i < 8; i++) {
+      request[i + 8] = (byte)tid.charAt(i);
+    }
+
+    // send the request-packet to the peer
+    new OutgoingThread(recip, NC_PORT, request).start();    
+  }
 }

@@ -9,6 +9,8 @@ BYTE 1 - 'C'
 
 BYTE 2 - type
  -'P' --> post
+ -'H' --> hello-packet
+ -'R' --> request-packet
 
 BYTE 3 - flags
 
@@ -31,3 +33,12 @@ Layout of a hello-packet ('H'):
 Hello-packets contain no data beyond the header bytes. These packets are only
 used for a client to add itself to one of its peers' peer list, or for the
 client to keep itself alive in its peers' peer list.
+
+
+
+Layout of a request-packet ('R'):
+BYTE 8-15 - TID
+
+When a client receives a request-packet, it will send its copy of the thread
+specified by to the requesting client. This is typically used when a client first
+connects to the network and is trying to gather threads.
