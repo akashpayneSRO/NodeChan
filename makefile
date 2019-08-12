@@ -1,4 +1,4 @@
-NODE_DEPENDS = lib/WaifUPnP.jar src/ChanPost.java src/ChanThread.java src/GUIAddPeer.java src/GUICreateNewThread.java src/GUIMain.java src/GUIRightClickMenu.java src/GUIThreadView.java src/IncomingThread.java src/NodeChan.java src/OutgoingThread.java src/Peer.java
+NODE_DEPENDS = lib/WaifUPnP.jar src/ChanPost.java src/ChanThread.java src/GUIAddPeer.java src/GUICreateNewThread.java src/GUIMain.java src/GUIRightClickMenu.java src/GUIThreadView.java src/IncomingThread.java src/NodeChan.java src/OutgoingThread.java src/Peer.java src/RequestedThreadSender.java src/PacketQueuer.java
 JAR_DEPENDS = NodeChan.jar manifest.mf lib/WaifUPnP.jar
 
 NodeChan.jar: $(NODE_DEPENDS)

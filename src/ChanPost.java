@@ -5,6 +5,8 @@ import java.util.Random;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import java.nio.ByteBuffer;
+
 /**
  *
  * This class represents a single post in a NodeChan thread.
@@ -72,17 +74,38 @@ public class ChanPost {
   }
 
   /**
+   * For sorting purposes
+   * Sort from most recent (so, highest) post time to oldest (top-to-bottom)
+   */
+  public int compareTo(ChanPost other) {
+    long t = this.postTime - other.getPostTime();
+    
+    if (t < 0) return -1;
+    else if (t > 0) return 1;
+    else return 0;
+  }
+
+  public void setTitle(String title) {
+    this.title = title;
+  }
+
+  public void setPostTime(long time) {
+    this.postTime = time;
+  }
+
+  /**
    * Convert a ChanPost into a byte array for transmission over UDP. See
    * format.txt for information about packet formatting.
    */
   public static byte[] encodeUDP(ChanPost out) {
-    byte[] result = new byte[330];
+    byte[] result = new byte[338];
 
     String outTid = out.getTid();
     String outPid = out.getPid();
     byte[] out_addr = out.getSender_addr().getAddress();
     String outTitle = out.getTitle();
     String outText = out.getText();
+    long outTime = out.getPostTime();
 
     // NodeChan header
     result[0] = 'N';
@@ -109,21 +132,29 @@ public class ChanPost {
       result[i + 16] = (byte)outPid.charAt(i);
     }
 
+    // post time
+    ByteBuffer timeBuffer = ByteBuffer.allocate(Long.BYTES).putLong(outTime);
+    byte[] time = timeBuffer.array();
+
+    for (int i = 0; i < 8; i++) {
+      result[i + 24] = time[i];
+    }
+
     // title
     for (int i = 0; i < 50; i++) {
       if (i < outTitle.length()) {
-        result[24 + i] = (byte)outTitle.charAt(i);
+        result[32 + i] = (byte)outTitle.charAt(i);
       } else {
-        result[24 + i] = (byte)0;
+        result[32 + i] = (byte)0;
       }
     }
 
     // post text
     for (int i = 0; i < 256; i++) {
       if (i < outText.length()) {
-        result[74 + i] = (byte)outText.charAt(i);
+        result[82 + i] = (byte)outText.charAt(i);
       } else {
-        result[74 + i] = (byte)0;
+        result[82 + i] = (byte)0;
       }
     }
 
@@ -153,10 +184,22 @@ public class ChanPost {
 
     String newTid   = new String(in, 8, 8);
     String newPid   = new String(in, 16, 8);
-    String newTitle = new String(in, 24, 50);
+
+    long newTime = 0;
+    byte[] newTimeArr = new byte[8];
+    for (int i = 0; i < 8; i++) {
+      newTimeArr[i] = in[i + 24];
+    }
+
+    ByteBuffer newBuffer = ByteBuffer.allocate(Long.BYTES);
+    newBuffer.put(newTimeArr);
+    newBuffer.flip();
+    newTime = newBuffer.getLong();
+
+    String newTitle = new String(in, 32, 50);
     String newText  = "";
 
-    for (int i = 74; i < in.length; i++) {
+    for (int i = 82; i < in.length; i++) {
       newText = newText + (char)in[i];
     }
 
@@ -178,6 +221,8 @@ public class ChanPost {
         newTitle,
         newText
     );
+
+    result.setPostTime(newTime);
 
     return result;
   }

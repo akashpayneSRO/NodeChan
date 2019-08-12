@@ -2,9 +2,11 @@ package com.squidtech.nodechan;
 
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.InputMismatchException;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -85,14 +87,20 @@ public class NodeChan {
   /** Incoming packet-handling thread **/
   private static IncomingThread nc_incoming;
 
+  /** Incoming packet-queuing thread **/
+  private static PacketQueuer nc_queuer;
+
+  /** stores incoming packets for the packet handling thread to process **/
+  private static List<byte[]> nc_packet_queue;
+
   /** List of this node's peers **/
-  private static ArrayList<Peer> peers;
+  private static List<Peer> peers;
 
   /** Local list of ChanThreads this user has received **/
-  private static ArrayList<ChanThread> threads;
+  private static List<ChanThread> threads;
 
   /** List of users that this user has blocked **/
-  private static ArrayList<Peer> blocked;
+  private static List<Peer> blocked;
 
   /** URL of the peer tracker to use **/
   public static String peerTrackerURL = "http://squid-tech.com/nodes/peer.php?ip=";
@@ -111,9 +119,14 @@ public class NodeChan {
 
     System.out.println("Welcome to NodeChan.");
 
-    peers = new ArrayList<Peer>();
-    threads = new ArrayList<ChanThread>();
-    blocked = new ArrayList<Peer>();
+    //peers = new ArrayList<Peer>();
+    //threads = new ArrayList<ChanThread>();
+    //blocked = new ArrayList<Peer>();
+
+    peers = new CopyOnWriteArrayList<Peer>();
+    threads = new CopyOnWriteArrayList<ChanThread>();
+    blocked = new CopyOnWriteArrayList<Peer>();
+    nc_packet_queue = new CopyOnWriteArrayList<byte[]>();
 
     // get the local ip address
     if (!local) {
@@ -177,9 +190,13 @@ public class NodeChan {
       return;
     }
     
+    // initialize packet receiving/queuing thread
+    nc_queuer = new PacketQueuer(nc_packet_queue, nc_socket);
 
     // initialize incoming packet-handling thread
-    nc_incoming = new IncomingThread(nc_socket, threads, peers);
+    nc_incoming = new IncomingThread(nc_packet_queue, threads, peers);
+
+    nc_queuer.start();
     nc_incoming.start();
 
     // command-line inputs
@@ -635,7 +652,6 @@ public class NodeChan {
     hello[2] = 'H';
 
     // flags
-    // TODO: request threads from peer
     hello[3] = 0;
 
     // this node's IP
@@ -748,5 +764,43 @@ public class NodeChan {
     }
 
     return false;
+  }
+
+  /**
+   * This method sends a request for another client to send a complete copy
+   * of the thread specified by "tid"
+   * This method is used when a client receives a post that is not the
+   * actual OP of the thread, so they need the rest of the thread for the
+   * out-of-order received post to make sense
+   * recip is the InetAddress of the client we're requesting the rest of
+   * the thread from
+   */
+  public static void requestThread(String tid, InetAddress recip) {
+    byte[] request = new byte[16];
+
+    // header bytes
+    request[0] = 'N';
+    request[1] = 'C';
+    
+    // post type
+    request[2] = 'R';
+
+    // flags
+    request[3] = 0;
+
+    // this node's IP
+    byte[] node_addr_bytes = node_ip.getAddress();
+
+    for (int i = 0; i < 4; i++) {
+      request[i + 4] = node_addr_bytes[i];
+    }
+
+    // the TID of the thread this client is requesting
+    for (int i = 0; i < 8; i++) {
+      request[i + 8] = (byte)tid.charAt(i);
+    }
+
+    // send the request-packet to the peer
+    new OutgoingThread(recip, NC_PORT, request).start();    
   }
 }

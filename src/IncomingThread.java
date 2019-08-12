@@ -5,7 +5,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import java.io.IOException;
 
@@ -17,33 +17,28 @@ import java.util.Comparator;
  * incoming data as necessary.
  */
 public class IncomingThread extends Thread {
-  /** The socket we're receiving UDP through **/
-  DatagramSocket sock;
+  /** The packet queue to pull packets from **/
+  List<byte[]> queue;
 
   /** The local ChanThread storage **/
-  ArrayList<ChanThread> threads;
+  List<ChanThread> threads;
 
   /** The local list of peers **/
-  ArrayList<Peer> peers;
+  List<Peer> peers;
 
-  public IncomingThread(DatagramSocket sock, ArrayList<ChanThread> threads, ArrayList<Peer> peers) {
-    this.sock = sock;
+  public IncomingThread(List<byte[]> queue, List<ChanThread> threads, List<Peer> peers) {
+    this.queue = queue;
     this.threads = threads;
     this.peers = peers;
   }
 
   public void run() {
-    // handle incoming packets indefinitely
+    // process incoming packets indefinitely
     while (true) {
-      byte[] recv_data = new byte[326];
+      // wait for a packet to come
+      while(queue.size() == 0);
 
-      DatagramPacket receivePacket = new DatagramPacket(recv_data, recv_data.length);
-
-      try {
-        sock.receive(receivePacket);
-      } catch (IOException e) {
-        continue;
-      }
+      byte[] recv_data = queue.remove(0);
 
       // check header
       if (recv_data[0] != 'N' || recv_data[1] != 'C') continue;
@@ -88,56 +83,46 @@ public class IncomingThread extends Thread {
           // decode the post packet
           ChanPost post = ChanPost.decodeUDP(recv_data);
           
-          if (post.getIsRoot()) {
-            // check whether we already have a copy of this OP
-            boolean haveOP = false;
 
-            for (ChanThread t : threads) {
-              if (t.getTid().equals(post.getTid())) {
-                haveOP = true;
-                post = t.getPost(0);
+          // check whether we have this thread
+          // if not, ignore this post, since it would be pointless to start
+          // in the middle of the conversation
+          ChanThread existThread = null;
+
+          for (ChanThread t : threads) {
+            if (t.getTid().equals(post.getTid())) {
+              existThread = t;
+              break;
+            }
+          }
+
+          if (existThread != null) {
+            // check whether we already have this post
+            boolean havePost = false;
+
+            for (int i = 0; i < existThread.getNumPosts(); i++) {
+              if (existThread.getPost(i).getPid().equals(post.getPid())) {
+                havePost = true;
+                post = existThread.getPost(i);
                 break;
               }
             }
 
-            if (!haveOP) {
-              // create a new local thread with this OP
-              ChanThread newThread = new ChanThread(post.getTid());
-              newThread.addPost(post);
-              threads.add(newThread);
+            if (!havePost) {
+              // we have the thread, but don't have this post yet, so add it
+              existThread.addPost(post);
             }
           } else {
-            // check whether we have this thread
-            // if not, ignore this post, since it would be pointless to start
-            // in the middle of the conversation
-            ChanThread existThread = null;
+            // we don't have this thread yet, so we will create a new local
+            // copy, and also ask the sending peer for the rest of the thread
+            ChanThread tempThread = new ChanThread(post.getTid());
+            tempThread.addPost(post);
+            tempThread.setTitle(post.getTitle());
+            threads.add(tempThread);
 
-            for (ChanThread t : threads) {
-              if (t.getTid().equals(post.getTid())) {
-                existThread = t;
-                break;
-              }
-            }
-
-            if (existThread != null) {
-              // check whether we already have this post
-              boolean havePost = false;
-
-              for (int i = 0; i < existThread.getNumPosts(); i++) {
-                if (existThread.getPost(i).getPid().equals(post.getPid())) {
-                  havePost = true;
-                  post = existThread.getPost(i);
-                  break;
-                }
-              }
-
-              if (!havePost) {
-                // we have the thread, but don't have this post yet, so add it
-                existThread.addPost(post);
-              }
-            } else {
-              // ignore the post... for now
-            }
+            // request the complete thread from the client that just
+            // sent us this post
+            NodeChan.requestThread(tempThread.getTid(), incoming);
           }
 
           // forward this packet to all peers (except the peer we received the
@@ -167,6 +152,28 @@ public class IncomingThread extends Thread {
         case 'H':
           // do nothing, the hello-packet is just for adding new peers
           break;
+        case 'R':
+          // send a copy of the specified thread to the user we received
+          // the thread-request from
+          String tid = "";
+          ChanThread reqThread = null;
+
+          for (int i = 0; i < 8; i++) {
+            tid += ((char) recv_data[i + 8]);
+          }
+
+          // find the requested thread in this client's thread list
+          for (int i = 0; i < threads.size(); i++) {
+            if (threads.get(i).getTid().equals(tid)) {
+              reqThread = threads.get(i);
+              break;
+            }
+          }
+
+          if (reqThread == null) continue;
+
+          new RequestedThreadSender(reqThread, incoming).start();
+          break;
       }
 
       // check for peers that have timed out
@@ -174,7 +181,7 @@ public class IncomingThread extends Thread {
 
       // update the GUI when we receive packets, if GUI mode and auto-refresh
       // are both enabled
-      if (!NodeChan.nogui && NodeChan.autorefresh) {
+      if (!NodeChan.nogui && NodeChan.autorefresh && NodeChan.mainGui != null) {
         NodeChan.mainGui.refreshThreads();
       }
     }
