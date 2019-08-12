@@ -6,7 +6,7 @@ import java.net.InetAddress;
  * This thread is invoked to separate sending entire groups of posts
  * from the main processing threads
  */
-public class RequestedThreadSender {
+public class RequestedThreadSender extends Thread {
   /** The thread containing the posts we are sending **/
   ChanThread thread;
 

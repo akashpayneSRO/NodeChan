@@ -145,7 +145,7 @@ public class IncomingThread extends Thread {
 
               // request the complete thread from the client that just
               // sent us this post
-              NodeChan.requestThread(tempThread.getTid(), incoming).start();
+              NodeChan.requestThread(tempThread.getTid(), incoming);
             }
           }
 
@@ -196,7 +196,7 @@ public class IncomingThread extends Thread {
 
           if (reqThread == null) continue;
 
-          new RequestedThreadSender(reqThread, incoming);
+          new RequestedThreadSender(reqThread, incoming).start();
           break;
       }
 
