@@ -23,7 +23,7 @@ public class RequestedThreadSender extends Thread {
     for (int i = 0; i < thread.getNumPosts(); i++) {
       byte[] out = ChanPost.encodeUDP(thread.getPost(i));
 
-      OutgoingThread outThread = new OutgoingThread(recip, NodeChan.NC_PORT, out);
+      OutgoingThread outThread = new OutgoingThread(recip, NodeChan.NC_PORT, out).start();
 
       outThread.start();
 
