@@ -72,6 +72,22 @@ public class ChanPost {
   }
 
   /**
+   * For sorting purposes
+   * Sort from most recent (so, highest) post time to oldest (top-to-bottom)
+   */
+  public int compareTo(ChanPost other) {
+    long t = this.postTime - other.getPostTime();
+    
+    if (t < 0) return -1;
+    else if (t > 0) return 1;
+    else return 0;
+  }
+
+  public void setTitle(String title) {
+    this.title = title;
+  }
+
+  /**
    * Convert a ChanPost into a byte array for transmission over UDP. See
    * format.txt for information about packet formatting.
    */

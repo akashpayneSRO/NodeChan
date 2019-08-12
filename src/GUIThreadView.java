@@ -2,6 +2,8 @@ package com.squidtech.nodechan;
 
 import java.util.ArrayList;
 import java.util.Vector;
+import java.util.Collections;
+import java.util.Comparator;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -58,12 +60,12 @@ public class GUIThreadView extends JFrame {
     this.setLayout(new BorderLayout());
     this.setSize(540, 380);
 
-    threadPosts = new ArrayList<ChanPost>();
+    threadPosts = thread.getPosts();
 
     // initialize the posts
-    for (int i = 0; i < thread.getNumPosts(); i++) {
+    /*for (int i = 0; i < thread.getNumPosts(); i++) {
       threadPosts.add(thread.getPost(i));
-    }
+    }*/
 
     replyBar = new JPanel(new BorderLayout());
     replyBar.setBorder(new CompoundBorder(new LineBorder(Color.DARK_GRAY),
@@ -131,14 +133,19 @@ public class GUIThreadView extends JFrame {
     this.add(scrollPane);
 
     this.setVisible(true);
+
+    refreshPosts();
   }
 
   public void refreshPosts() {
-    threadPosts = new ArrayList<ChanPost>();
+    threadPosts = thread.getPosts();
 
-    for (int i = 0; i < thread.getNumPosts(); i++) {
-      threadPosts.add(thread.getPost(i));
-    }
+    Collections.sort(threadPosts, new Comparator<ChanPost>() {
+      @Override
+      public int compare(ChanPost post1, ChanPost post2) {
+        return post1.compareTo(post2);
+      }
+    });
 
     chanPostJList.setListData(new Vector<ChanPost>(threadPosts));
   }

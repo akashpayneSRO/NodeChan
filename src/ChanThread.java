@@ -53,24 +53,15 @@ public class ChanThread {
    * Sorted by post time - earliest first.
    */
   public void addPost(ChanPost post) {
-    if (posts.size() == 0 || post.getIsRoot()) {
+    if (post.getIsRoot()) {
       // this is the first post in the thread
       this.title = post.getTitle();
-      this.posts.add(0, post);
-    } else {
-      // sort by time (earliest first)
-      for (int i = 0; i < posts.size() - 1; i++) {
-        if (posts.get(i).getPostTime() < post.getPostTime() &&
-            posts.get(i + 1).getPostTime() >= post.getPostTime()) {
-          this.posts.add(i + 1, post);
-          return;
-        }
-      }
-
-      this.posts.add(post);
     }
 
-    this.lastTime = post.getPostTime();
+    this.posts.add(post);
+
+    if (post.getPostTime() > this.lastTime)
+      this.lastTime = post.getPostTime();
   }
 
   /**
@@ -109,12 +100,12 @@ public class ChanThread {
     return this.lastTime;
   }
 
-  /**
-   * We want to avoid giving outside classes direct access to the posts
-   * ArrayList
-   */
   public ChanPost getPost(int i) {
     return this.posts.get(i);
+  }
+
+  public ArrayList<ChanPost> getPosts() {
+    return this.posts;
   }
 
   /**

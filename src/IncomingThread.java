@@ -183,20 +183,18 @@ public class IncomingThread extends Thread {
           ChanThread reqThread = null;
 
           for (int i = 0; i < 8; i++) {
-            tid += (char) recv_data[i + 8];
+            tid += ((char) recv_data[i + 8]);
           }
 
           // find the requested thread in this client's thread list
           for (int i = 0; i < threads.size(); i++) {
-            if (threads.get(i).equals(tid)) {
+            if (threads.get(i).getTid().equals(tid)) {
               reqThread = threads.get(i);
               break;
             }
           }
 
           if (reqThread == null) continue;
-
-          System.out.println("Handling request for thread title " + reqThread.getTitle());
 
           new RequestedThreadSender(reqThread, incoming).start();
           break;
