@@ -140,11 +140,12 @@ public class IncomingThread extends Thread {
               // copy, and also ask the sending peer for the rest of the thread
               ChanThread tempThread = new ChanThread(post.getTid());
               tempThread.addPost(post);
+              tempThread.setTitle(post.getTitle());
               threads.add(tempThread);
 
               // request the complete thread from the client that just
               // sent us this post
-              NodeChan.requestThread(tempThread.getTid(), incoming);
+              NodeChan.requestThread(tempThread.getTid(), incoming).start();
             }
           }
 

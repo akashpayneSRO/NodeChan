@@ -85,6 +85,10 @@ public class ChanThread {
     else return 0;
   }
 
+  public void setTitle(String title) {
+    this.title = title;
+  }
+
 
   /*
    * getters
