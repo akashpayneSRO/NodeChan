@@ -17,8 +17,8 @@ import java.util.Comparator;
  * incoming data as necessary.
  */
 public class IncomingThread extends Thread {
-  /** The socket we're receiving UDP through **/
-  DatagramSocket sock;
+  /** The packet queue to pull packets from **/
+  List<byte[]> queue;
 
   /** The local ChanThread storage **/
   List<ChanThread> threads;
@@ -26,24 +26,19 @@ public class IncomingThread extends Thread {
   /** The local list of peers **/
   List<Peer> peers;
 
-  public IncomingThread(DatagramSocket sock, List<ChanThread> threads, List<Peer> peers) {
-    this.sock = sock;
+  public IncomingThread(List<byte[]> queue, List<ChanThread> threads, List<Peer> peers) {
+    this.queue = queue;
     this.threads = threads;
     this.peers = peers;
   }
 
   public void run() {
-    // handle incoming packets indefinitely
+    // process incoming packets indefinitely
     while (true) {
-      byte[] recv_data = new byte[338];
+      // wait for a packet to come
+      while(queue.size() == 0);
 
-      DatagramPacket receivePacket = new DatagramPacket(recv_data, recv_data.length);
-
-      try {
-        sock.receive(receivePacket);
-      } catch (IOException e) {
-        continue;
-      }
+      byte[] recv_data = queue.remove(0);
 
       // check header
       if (recv_data[0] != 'N' || recv_data[1] != 'C') continue;

@@ -87,6 +87,12 @@ public class NodeChan {
   /** Incoming packet-handling thread **/
   private static IncomingThread nc_incoming;
 
+  /** Incoming packet-queuing thread **/
+  private static PacketQueuer nc_queuer;
+
+  /** stores incoming packets for the packet handling thread to process **/
+  private static List<byte[]> nc_packet_queue;
+
   /** List of this node's peers **/
   private static List<Peer> peers;
 
@@ -120,6 +126,7 @@ public class NodeChan {
     peers = new CopyOnWriteArrayList<Peer>();
     threads = new CopyOnWriteArrayList<ChanThread>();
     blocked = new CopyOnWriteArrayList<Peer>();
+    nc_packet_queue = new CopyOnWriteArrayList<byte[]>();
 
     // get the local ip address
     if (!local) {
@@ -183,9 +190,13 @@ public class NodeChan {
       return;
     }
     
+    // initialize packet receiving/queuing thread
+    nc_queuer = new PacketQueuer(nc_packet_queue, nc_socket);
 
     // initialize incoming packet-handling thread
-    nc_incoming = new IncomingThread(nc_socket, threads, peers);
+    nc_incoming = new IncomingThread(nc_packet_queue, threads, peers);
+
+    nc_queuer.start();
     nc_incoming.start();
 
     // command-line inputs
