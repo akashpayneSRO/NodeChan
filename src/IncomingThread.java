@@ -88,65 +88,46 @@ public class IncomingThread extends Thread {
           // decode the post packet
           ChanPost post = ChanPost.decodeUDP(recv_data);
           
-          if (post.getIsRoot()) {
-            // check whether we already have a copy of this OP
-            boolean haveOP = false;
 
-            for (ChanThread t : threads) {
-              if (t.getTid().equals(post.getTid())) {
-                haveOP = true;
-                post = t.getPost(0);
+          // check whether we have this thread
+          // if not, ignore this post, since it would be pointless to start
+          // in the middle of the conversation
+          ChanThread existThread = null;
+
+          for (ChanThread t : threads) {
+            if (t.getTid().equals(post.getTid())) {
+              existThread = t;
+              break;
+            }
+          }
+
+          if (existThread != null) {
+            // check whether we already have this post
+            boolean havePost = false;
+
+            for (int i = 0; i < existThread.getNumPosts(); i++) {
+              if (existThread.getPost(i).getPid().equals(post.getPid())) {
+                havePost = true;
+                post = existThread.getPost(i);
                 break;
               }
             }
 
-            if (!haveOP) {
-              // create a new local thread with this OP
-              ChanThread newThread = new ChanThread(post.getTid());
-              newThread.addPost(post);
-              threads.add(newThread);
+            if (!havePost) {
+              // we have the thread, but don't have this post yet, so add it
+              existThread.addPost(post);
             }
           } else {
-            // check whether we have this thread
-            // if not, ignore this post, since it would be pointless to start
-            // in the middle of the conversation
-            ChanThread existThread = null;
+            // we don't have this thread yet, so we will create a new local
+            // copy, and also ask the sending peer for the rest of the thread
+            ChanThread tempThread = new ChanThread(post.getTid());
+            tempThread.addPost(post);
+            tempThread.setTitle(post.getTitle());
+            threads.add(tempThread);
 
-            for (ChanThread t : threads) {
-              if (t.getTid().equals(post.getTid())) {
-                existThread = t;
-                break;
-              }
-            }
-
-            if (existThread != null) {
-              // check whether we already have this post
-              boolean havePost = false;
-
-              for (int i = 0; i < existThread.getNumPosts(); i++) {
-                if (existThread.getPost(i).getPid().equals(post.getPid())) {
-                  havePost = true;
-                  post = existThread.getPost(i);
-                  break;
-                }
-              }
-
-              if (!havePost) {
-                // we have the thread, but don't have this post yet, so add it
-                existThread.addPost(post);
-              }
-            } else {
-              // we don't have this thread yet, so we will create a new local
-              // copy, and also ask the sending peer for the rest of the thread
-              ChanThread tempThread = new ChanThread(post.getTid());
-              tempThread.addPost(post);
-              tempThread.setTitle(post.getTitle());
-              threads.add(tempThread);
-
-              // request the complete thread from the client that just
-              // sent us this post
-              NodeChan.requestThread(tempThread.getTid(), incoming);
-            }
+            // request the complete thread from the client that just
+            // sent us this post
+            NodeChan.requestThread(tempThread.getTid(), incoming);
           }
 
           // forward this packet to all peers (except the peer we received the
